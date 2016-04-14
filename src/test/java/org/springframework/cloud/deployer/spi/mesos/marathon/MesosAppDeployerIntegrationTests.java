@@ -45,6 +45,11 @@ public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegra
 	}
 
 	@Override
+	protected int redeploymentPause() {
+		return 2000;
+	}
+
+	@Override
 	protected Resource integrationTestProcessor() {
 		//TODO: create a project that builds docker image for testing
 		return new DockerResource("trisberg/deployer-test-app:latest");

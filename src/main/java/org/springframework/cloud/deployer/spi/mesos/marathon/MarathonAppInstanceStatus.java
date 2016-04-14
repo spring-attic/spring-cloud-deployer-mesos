@@ -1,5 +1,6 @@
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -9,6 +10,7 @@ import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.util.StringUtils;
 
 import mesosphere.marathon.client.model.v2.App;
+import mesosphere.marathon.client.model.v2.HealthCheckResult;
 import mesosphere.marathon.client.model.v2.Task;
 
 /**
@@ -51,14 +53,21 @@ public class MarathonAppInstanceStatus implements AppInstanceStatus {
 	@Override
 	public DeploymentState getState() {
 		if (task == null) {
-			return DeploymentState.unknown;
+			if (app.getLastTaskFailure() == null) {
+				return DeploymentState.unknown;
+			}
+			else {
+				return DeploymentState.failed;
+			}
 		}
 		else {
 			if (app.getInstances().intValue() > app.getTasksRunning().intValue()) {
 				return DeploymentState.deploying;
 			}
 			else {
-				return DeploymentState.deployed;
+				Collection<HealthCheckResult> healthCheckResults = task.getHealthCheckResults();
+				boolean alive = healthCheckResults != null && healthCheckResults.iterator().next().isAlive();
+				return alive ? DeploymentState.deployed : DeploymentState.deploying;
 			}
 		}
 	}

@@ -35,6 +35,7 @@ import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.model.v2.App;
 import mesosphere.marathon.client.model.v2.Container;
 import mesosphere.marathon.client.model.v2.Docker;
+import mesosphere.marathon.client.model.v2.HealthCheck;
 import mesosphere.marathon.client.model.v2.Port;
 import mesosphere.marathon.client.model.v2.Task;
 import mesosphere.marathon.client.utils.MarathonException;
@@ -65,7 +66,7 @@ public class MarathonAppDeployer implements AppDeployer {
 	@Override
 	public String deploy(AppDeploymentRequest request) {
 
-		logger.info("Deploying module: {}", request.getDefinition().getName());
+		logger.info("Deploying app: {}", request.getDefinition().getName());
 
 		String groupId = request.getEnvironmentProperties().get(GROUP_PROPERTY_KEY);
 		if (groupId == null) {
@@ -116,8 +117,12 @@ public class MarathonAppDeployer implements AppDeployer {
 		app.setMem(memory);
 		app.setInstances(Integer.getInteger(request.getDefinition().getProperties().get(COUNT_PROPERTY_KEY)));
 
-		logger.info("Creating app with definition: " + app.toString());
+		HealthCheck healthCheck = new HealthCheck();
+		healthCheck.setPath("/health");
+		healthCheck.setGracePeriodSeconds(60 * 10);
+		app.setHealthChecks(Arrays.asList(healthCheck));
 
+		logger.debug("Creating app with definition: " + app.toString());
 		try {
 			marathon.createApp(app);
 		}
@@ -148,11 +153,13 @@ public class MarathonAppDeployer implements AppDeployer {
 		}
 		catch (MarathonException e) {
 			if (e.getMessage().contains("Not Found")) {
-				return AppStatus.of(id).build();
+				status = AppStatus.of(id).build();
 			}
-			throw new RuntimeException(e);
+			else {
+				throw new RuntimeException(e);
+			}
 		}
-		logger.info("Status for app: {} is {}", id, status);
+		logger.debug("Status for app: {} is {}", id, status);
 		return status;
 	}
 
@@ -178,7 +185,7 @@ public class MarathonAppDeployer implements AppDeployer {
 	}
 
 	private AppStatus buildStatus(String id, App app) {
-		logger.info("App " + id + " has " + app.getTasksRunning() + "/" + app.getInstances() + " tasks running");
+		logger.debug("App " + id + " has " + app.getTasksRunning() + "/" + app.getInstances() + " tasks running");
 		AppStatus.Builder result = AppStatus.of(id);
 		int requestedInstances = app.getInstances();
 		int actualInstances = 0;
