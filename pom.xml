@@ -78,6 +78,7 @@
 		</dependency>
 	</dependencies>
 
+	<!-- TODO: Can be removed once we update to use 0.4.14 release for marathon-client -->
 	<profiles>
 		<profile>
 			<id>spring</id>
