@@ -35,12 +35,12 @@ import mesosphere.marathon.client.MarathonClient;
  * @author Thomas Risberg
  */
 @Configuration
-@EnableConfigurationProperties(MarathonProperties.class)
+@EnableConfigurationProperties(MarathonAppDeployerProperties.class)
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class MarathonAutoConfiguration {
 	
 	@Autowired
-	private MarathonProperties properties;
+	private MarathonAppDeployerProperties properties;
 
 	@Bean
 	public Marathon marathon() {

@@ -52,14 +52,14 @@ public class MarathonAppDeployer implements AppDeployer {
 
 	private static final Logger logger = LoggerFactory.getLogger(MarathonAppDeployer.class);
 
-	private MarathonProperties marathonProperties = new MarathonProperties();
+	private MarathonAppDeployerProperties properties = new MarathonAppDeployerProperties();
 
 	Marathon marathon;
 
 	@Autowired
-	public MarathonAppDeployer(MarathonProperties marathonProperties,
+	public MarathonAppDeployer(MarathonAppDeployerProperties properties,
 	                           Marathon marathon) {
-		this.marathonProperties = marathonProperties;
+		this.properties = properties;
 		this.marathon = marathon;
 	}
 
@@ -173,12 +173,12 @@ public class MarathonAppDeployer implements AppDeployer {
 
 	private Double deduceMemory(AppDeploymentRequest request) {
 		String override = request.getEnvironmentProperties().get("spring.cloud.deployer.marathon.memory");
-		return override != null ? Double.valueOf(override) : marathonProperties.getMemory();
+		return override != null ? Double.valueOf(override) : properties.getMemory();
 	}
 
 	private Double deduceCpus(AppDeploymentRequest request) {
 		String override = request.getEnvironmentProperties().get("spring.cloud.deployer.marathon.cpu");
-		return override != null ? Double.valueOf(override) : marathonProperties.getCpu();
+		return override != null ? Double.valueOf(override) : properties.getCpu();
 	}
 
 	private AppStatus buildStatus(String id, App app) {

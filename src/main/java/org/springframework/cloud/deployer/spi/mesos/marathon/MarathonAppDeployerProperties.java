@@ -24,8 +24,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * @author Eric Bottard
  * @author Thomas Risberg
  */
-@ConfigurationProperties("spring.cloud.deployer.marathon")
-public class MarathonProperties {
+@ConfigurationProperties("spring.cloud.deployer.mesos.marathon")
+public class MarathonAppDeployerProperties {
 
 	/**
 	 * The location of the Marathon REST endpoint.
@@ -45,8 +45,7 @@ public class MarathonProperties {
 	/**
 	 * How many CPUs to allocate per module, can be overridden at deployment time.
 	 */
-//	private double cpu = 0.5D;
-	private double cpu = 1.0D;
+	private double cpu = 0.5D;
 
 	/**
 	 * The set of dependencies to add at runtime to the deployed module launcher.

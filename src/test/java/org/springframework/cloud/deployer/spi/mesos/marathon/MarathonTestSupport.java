@@ -55,11 +55,11 @@ public class MarathonTestSupport extends AbstractExternalResourceTestSupport<Mar
 
 	@Configuration
 	@EnableAutoConfiguration
-	@EnableConfigurationProperties(MarathonProperties.class)
+	@EnableConfigurationProperties(MarathonAppDeployerProperties.class)
 	public static class Config {
 
 		@Bean
-		public Marathon marathon(MarathonProperties properties) {
+		public Marathon marathon(MarathonAppDeployerProperties properties) {
 			Marathon marathon = MarathonClient.getInstance(properties.getApiEndpoint());
 			return marathon;
 		}
