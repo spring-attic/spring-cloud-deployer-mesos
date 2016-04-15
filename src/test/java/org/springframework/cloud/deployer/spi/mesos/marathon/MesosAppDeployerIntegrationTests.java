@@ -16,6 +16,8 @@
 
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
+import org.junit.ClassRule;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.cloud.deployer.resource.docker.DockerResource;
@@ -33,6 +35,9 @@ public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegra
 
 	@Autowired
 	private AppDeployer appDeployer;
+
+	@ClassRule
+	public static MarathonTestSupport marathonAvailable = new MarathonTestSupport();
 
 	@Override
 	protected AppDeployer appDeployer() {

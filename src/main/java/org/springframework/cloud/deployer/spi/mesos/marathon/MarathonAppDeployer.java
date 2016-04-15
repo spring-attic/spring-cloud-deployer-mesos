@@ -68,13 +68,9 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		logger.info("Deploying app: {}", request.getDefinition().getName());
 
-		String groupId = request.getEnvironmentProperties().get(GROUP_PROPERTY_KEY);
-		if (groupId == null) {
-			groupId = "default";
-		}
-		App app = new App();
+		String appId = deduceAppId(request);
 
-		AppStatus status = status(deduceAppId(request));
+		AppStatus status = status(appId);
 		if (!status.getState().equals(DeploymentState.unknown)) {
 			throw new IllegalStateException(
 					String.format("App '%s' is already deployed", request.getDefinition().getName()));
@@ -96,9 +92,10 @@ public class MarathonAppDeployer implements AppDeployer {
 		docker.setPortMappings(Arrays.asList(port));
 		docker.setNetwork("BRIDGE");
 		container.setDocker(docker);
-		app.setContainer(container);
 
-		app.setId(deduceAppId(request));
+		App app = new App();
+		app.setContainer(container);
+		app.setId(appId);
 
 		Map<String, String> env = new HashMap<>();
 		env.putAll(request.getDefinition().getProperties());
