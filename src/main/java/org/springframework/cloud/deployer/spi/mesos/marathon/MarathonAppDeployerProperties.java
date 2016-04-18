@@ -48,18 +48,9 @@ public class MarathonAppDeployerProperties {
 	private double cpu = 0.5D;
 
 	/**
-	 * The set of dependencies to add at runtime to the deployed module launcher.
-	 * Typically includes the spring cloud marathon-connector library.
+	 * Environment variables to set for any deployed app container.
 	 */
-	private String includes;
-
-	public String getIncludes() {
-		return includes;
-	}
-
-	public void setIncludes(String includes) {
-		this.includes = includes;
-	}
+	private String[] environmentVariables = new String[]{};
 
 	public double getMemory() {
 		return memory;
@@ -91,5 +82,13 @@ public class MarathonAppDeployerProperties {
 
 	public void setImagePullSecret(String imagePullSecret) {
 		this.imagePullSecret = imagePullSecret;
+	}
+
+	public String[] getEnvironmentVariables() {
+		return environmentVariables;
+	}
+
+	public void setEnvironmentVariables(String[] environmentVariables) {
+		this.environmentVariables = environmentVariables;
 	}
 }

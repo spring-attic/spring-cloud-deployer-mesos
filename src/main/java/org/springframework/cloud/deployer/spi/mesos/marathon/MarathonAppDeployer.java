@@ -18,6 +18,7 @@ package org.springframework.cloud.deployer.spi.mesos.marathon;
 
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.springframework.cloud.deployer.spi.app.AppDeployer;
 import org.springframework.cloud.deployer.spi.app.AppStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.util.Assert;
 
 import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.model.v2.App;
@@ -104,6 +106,11 @@ public class MarathonAppDeployer implements AppDeployer {
 		// Pass API Endpoint under this environment variable for discovery by marathon cloud connector
 		// TODO: Service discovery?????
 		//env.put("SPRING_CLOUD_MARATHON_HOST", marathonProperties.getApiEndpoint());
+		for (String envVar : properties.getEnvironmentVariables()) {
+			String[] strings = envVar.split("=", 2);
+			Assert.isTrue(strings.length == 2, "Invalid environment variable declared: " + envVar);
+			env.put(strings[0], strings[1]);
+		}
 
 		app.setEnv(env);
 
