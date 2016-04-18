@@ -55,8 +55,8 @@ public class MarathonAutoConfiguration {
 
 	@Bean
 	public TaskLauncher taskDeployer(Marathon marathon) {
-		// Not yet implemented
-		return null;
+		// Return NO-OP instance for now, to satisfy server application wiring
+		return new MesosTaskLauncher();
 	}
 
 
