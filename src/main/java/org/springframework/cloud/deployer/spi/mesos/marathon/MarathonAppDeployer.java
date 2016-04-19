@@ -18,7 +18,6 @@ package org.springframework.cloud.deployer.spi.mesos.marathon;
 
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +80,6 @@ public class MarathonAppDeployer implements AppDeployer {
 		Container container = new Container();
 		Docker docker = new Docker();
 		String image = null;
-		//TODO: what's the proper format for a Docker URI?
 		try {
 			image = request.getResource().getURI().getSchemeSpecificPart();
 		} catch (IOException e) {
@@ -102,16 +100,11 @@ public class MarathonAppDeployer implements AppDeployer {
 		Map<String, String> env = new HashMap<>();
 		env.putAll(request.getDefinition().getProperties());
 		env.putAll(request.getEnvironmentProperties());
-
-		// Pass API Endpoint under this environment variable for discovery by marathon cloud connector
-		// TODO: Service discovery?????
-		//env.put("SPRING_CLOUD_MARATHON_HOST", marathonProperties.getApiEndpoint());
 		for (String envVar : properties.getEnvironmentVariables()) {
 			String[] strings = envVar.split("=", 2);
 			Assert.isTrue(strings.length == 2, "Invalid environment variable declared: " + envVar);
 			env.put(strings[0], strings[1]);
 		}
-
 		app.setEnv(env);
 
 		Double cpus = deduceCpus(request);
@@ -123,7 +116,7 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		HealthCheck healthCheck = new HealthCheck();
 		healthCheck.setPath("/health");
-		healthCheck.setGracePeriodSeconds(60 * 10);
+		healthCheck.setGracePeriodSeconds(300);
 		app.setHealthChecks(Arrays.asList(healthCheck));
 
 		logger.debug("Creating app with definition: " + app.toString());
