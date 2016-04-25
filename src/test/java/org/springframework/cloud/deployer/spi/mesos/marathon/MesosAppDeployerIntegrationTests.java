@@ -56,7 +56,6 @@ public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegra
 
 	@Override
 	protected Resource integrationTestProcessor() {
-		//TODO: create a project that builds docker image for testing
-		return new DockerResource("trisberg/deployer-test-app:latest");
+		return new DockerResource("springcloud/spring-cloud-deployer-spi-test-app:latest");
 	}
 }

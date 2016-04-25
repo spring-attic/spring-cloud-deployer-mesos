@@ -21,7 +21,7 @@ import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskStatus;
 
 /**
- * A task launcher that targets Kubernetes.
+ * A task launcher that targets Mesos.
  *
  * @author Thomas Risberg
  */

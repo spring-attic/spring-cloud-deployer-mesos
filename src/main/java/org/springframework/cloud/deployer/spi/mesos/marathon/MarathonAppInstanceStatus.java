@@ -84,6 +84,9 @@ public class MarathonAppInstanceStatus implements AppInstanceStatus {
 			else {
 				Collection<HealthCheckResult> healthCheckResults = task.getHealthCheckResults();
 				boolean alive = healthCheckResults != null && healthCheckResults.iterator().next().isAlive();
+				if (!alive && app.getLastTaskFailure() != null) {
+					return DeploymentState.failed;
+				}
 				return alive ? DeploymentState.deployed : DeploymentState.deploying;
 			}
 		}
