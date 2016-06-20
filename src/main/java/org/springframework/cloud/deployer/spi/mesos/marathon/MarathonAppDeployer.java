@@ -99,7 +99,7 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		Map<String, String> env = new HashMap<>();
 		env.putAll(request.getDefinition().getProperties());
-		env.putAll(request.getEnvironmentProperties());
+		env.putAll(request.getDeploymentProperties());
 		for (String envVar : properties.getEnvironmentVariables()) {
 			String[] strings = envVar.split("=", 2);
 			Assert.isTrue(strings.length == 2, "Invalid environment variable declared: " + envVar);
@@ -161,7 +161,7 @@ public class MarathonAppDeployer implements AppDeployer {
 	}
 
 	private String deduceAppId(AppDeploymentRequest request) {
-		String groupId = request.getEnvironmentProperties().get(GROUP_PROPERTY_KEY);
+		String groupId = request.getDeploymentProperties().get(GROUP_PROPERTY_KEY);
 		String name = request.getDefinition().getName();
 		if (groupId != null) {
 			return groupId + "-" + name;
@@ -172,12 +172,12 @@ public class MarathonAppDeployer implements AppDeployer {
 	}
 
 	private Double deduceMemory(AppDeploymentRequest request) {
-		String override = request.getEnvironmentProperties().get("spring.cloud.deployer.marathon.memory");
+		String override = request.getDeploymentProperties().get("spring.cloud.deployer.marathon.memory");
 		return override != null ? Double.valueOf(override) : properties.getMemory();
 	}
 
 	private Double deduceCpus(AppDeploymentRequest request) {
-		String override = request.getEnvironmentProperties().get("spring.cloud.deployer.marathon.cpu");
+		String override = request.getDeploymentProperties().get("spring.cloud.deployer.marathon.cpu");
 		return override != null ? Double.valueOf(override) : properties.getCpu();
 	}
 
