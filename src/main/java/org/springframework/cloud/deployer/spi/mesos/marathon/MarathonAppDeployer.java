@@ -22,6 +22,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import mesosphere.marathon.client.Marathon;
+import mesosphere.marathon.client.model.v2.App;
+import mesosphere.marathon.client.model.v2.Container;
+import mesosphere.marathon.client.model.v2.Docker;
+import mesosphere.marathon.client.model.v2.HealthCheck;
+import mesosphere.marathon.client.model.v2.Port;
+import mesosphere.marathon.client.model.v2.Task;
+import mesosphere.marathon.client.utils.MarathonException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,15 +39,6 @@ import org.springframework.cloud.deployer.spi.app.AppStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
 import org.springframework.util.Assert;
-
-import mesosphere.marathon.client.Marathon;
-import mesosphere.marathon.client.model.v2.App;
-import mesosphere.marathon.client.model.v2.Container;
-import mesosphere.marathon.client.model.v2.Docker;
-import mesosphere.marathon.client.model.v2.HealthCheck;
-import mesosphere.marathon.client.model.v2.Port;
-import mesosphere.marathon.client.model.v2.Task;
-import mesosphere.marathon.client.utils.MarathonException;
 
 /**
  * A deployer implementation for deploying apps on Marathon, using the
@@ -99,7 +98,6 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		Map<String, String> env = new HashMap<>();
 		env.putAll(request.getDefinition().getProperties());
-		env.putAll(request.getDeploymentProperties());
 		for (String envVar : properties.getEnvironmentVariables()) {
 			String[] strings = envVar.split("=", 2);
 			Assert.isTrue(strings.length == 2, "Invalid environment variable declared: " + envVar);
@@ -109,10 +107,11 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		Double cpus = deduceCpus(request);
 		Double memory = deduceMemory(request);
+		Integer instances = deduceInstances(request);
 
 		app.setCpus(cpus);
 		app.setMem(memory);
-		app.setInstances(Integer.getInteger(request.getDefinition().getProperties().get(COUNT_PROPERTY_KEY)));
+		app.setInstances(instances);
 
 		HealthCheck healthCheck = new HealthCheck();
 		healthCheck.setPath("/health");
@@ -180,6 +179,13 @@ public class MarathonAppDeployer implements AppDeployer {
 		String override = request.getDeploymentProperties().get("spring.cloud.deployer.marathon.cpu");
 		return override != null ? Double.valueOf(override) : properties.getCpu();
 	}
+
+	private Integer deduceInstances(AppDeploymentRequest request) {
+		String value = request.getDeploymentProperties().get(COUNT_PROPERTY_KEY);
+		return value != null ? Integer.valueOf(value) :Integer.valueOf("1");
+	}
+
+
 
 	private AppStatus buildStatus(String id, App app) {
 		logger.debug("App " + id + " has " + app.getTasksRunning() + "/" + app.getInstances() + " tasks running");
