@@ -99,7 +99,6 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		Map<String, String> env = new HashMap<>();
 		env.putAll(request.getDefinition().getProperties());
-		env.putAll(request.getDeploymentProperties());
 		for (String envVar : properties.getEnvironmentVariables()) {
 			String[] strings = envVar.split("=", 2);
 			Assert.isTrue(strings.length == 2, "Invalid environment variable declared: " + envVar);
@@ -112,7 +111,7 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		app.setCpus(cpus);
 		app.setMem(memory);
-		app.setInstances(Integer.getInteger(request.getDefinition().getProperties().get(COUNT_PROPERTY_KEY)));
+		app.setInstances(Integer.getInteger(request.getDeploymentProperties().get(COUNT_PROPERTY_KEY)));
 
 		HealthCheck healthCheck = new HealthCheck();
 		healthCheck.setPath("/health");
