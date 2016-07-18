@@ -26,6 +26,7 @@ import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.model.v2.App;
 import mesosphere.marathon.client.model.v2.Container;
 import mesosphere.marathon.client.model.v2.Docker;
+import mesosphere.marathon.client.model.v2.Group;
 import mesosphere.marathon.client.model.v2.HealthCheck;
 import mesosphere.marathon.client.model.v2.Port;
 import mesosphere.marathon.client.model.v2.Task;
@@ -35,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.deployer.spi.app.AppDeployer;
+import org.springframework.cloud.deployer.spi.app.AppInstanceStatus;
 import org.springframework.cloud.deployer.spi.app.AppStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
@@ -70,31 +72,39 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		String appId = deduceAppId(request);
 
-		AppStatus status = status(appId);
-		if (!status.getState().equals(DeploymentState.unknown)) {
-			throw new IllegalStateException(
-					String.format("App '%s' is already deployed", request.getDefinition().getName()));
+		boolean indexed = Boolean.valueOf(request.getDeploymentProperties().get(INDEXED_PROPERTY_KEY));
+
+		if (indexed) {
+			try {
+				Group group = marathon.getGroup(appId);
+				throw new IllegalStateException(
+						String.format("App '%s' is already deployed", request.getDefinition().getName()));
+			} catch (MarathonException ignore) {}
+			Container container = createContainer(request);
+			String countProperty = request.getDeploymentProperties().get(COUNT_PROPERTY_KEY);
+			int count = (countProperty != null) ? Integer.parseInt(countProperty) : 1;
+			for (int i = 0; i < count; i++) {
+				String instanceId = appId + "/" + request.getDefinition().getName() + "-" + i;
+				createAppDeployment(request, instanceId, container, Integer.valueOf(i));
+			}
+		}
+		else {
+			AppStatus status = status(appId);
+			if (!status.getState().equals(DeploymentState.unknown)) {
+				throw new IllegalStateException(
+						String.format("App '%s' is already deployed", request.getDefinition().getName()));
+			}
+			Container container = createContainer(request);
+			createAppDeployment(request, appId, container, null);
 		}
 
-		Container container = new Container();
-		Docker docker = new Docker();
-		String image = null;
-		try {
-			image = request.getResource().getURI().getSchemeSpecificPart();
-		} catch (IOException e) {
-			throw new IllegalArgumentException("Unable to get URI for " + request.getResource(), e);
-		}
-		logger.info("Using Docker image: " + image);
-		docker.setImage(image);
-		Port port = new Port(8080);
-		port.setHostPort(0);
-		docker.setPortMappings(Arrays.asList(port));
-		docker.setNetwork("BRIDGE");
-		container.setDocker(docker);
+		return appId;
+	}
 
+	private void createAppDeployment(AppDeploymentRequest request, String deploymentId, Container container, Integer index) {
 		App app = new App();
 		app.setContainer(container);
-		app.setId(appId);
+		app.setId(deploymentId);
 
 		Map<String, String> env = new HashMap<>();
 		env.putAll(request.getDefinition().getProperties());
@@ -103,11 +113,14 @@ public class MarathonAppDeployer implements AppDeployer {
 			Assert.isTrue(strings.length == 2, "Invalid environment variable declared: " + envVar);
 			env.put(strings[0], strings[1]);
 		}
+		if (index != null) {
+			env.put(INSTANCE_INDEX_PROPERTY_KEY, index.toString());
+		}
 		app.setEnv(env);
 
 		Double cpus = deduceCpus(request);
 		Double memory = deduceMemory(request);
-		Integer instances = deduceInstances(request);
+		Integer instances = index == null ? deduceInstances(request) : 1;
 
 		app.setCpus(cpus);
 		app.setMem(memory);
@@ -125,19 +138,101 @@ public class MarathonAppDeployer implements AppDeployer {
 		catch (MarathonException e) {
 			throw new RuntimeException(e);
 		}
-		return app.getId();
+	}
+
+	private Container createContainer(AppDeploymentRequest request) {
+		Container container = new Container();
+		Docker docker = new Docker();
+		String image = null;
+		try {
+			image = request.getResource().getURI().getSchemeSpecificPart();
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Unable to get URI for " + request.getResource(), e);
+		}
+		logger.info("Using Docker image: " + image);
+		docker.setImage(image);
+		Port port = new Port(8080);
+		port.setHostPort(0);
+		docker.setPortMappings(Arrays.asList(port));
+		docker.setNetwork("BRIDGE");
+		container.setDocker(docker);
+		return container;
 	}
 
 	@Override
 	public void undeploy(String id) {
-		logger.info("Undeploying module: {}", id);
+		logger.info("Undeploying app: {}", id);
+		Group group = null;
 		try {
-			marathon.deleteApp(id);
+			group = marathon.getGroup(id);
+		} catch (MarathonException ignore) {}
+		if (group != null) {
+			logger.info("Undeploying application deployments for group: {}", group.getId());
+			try {
+				if (group.getGroups().size() > 0) {
+					for (Group g : group.getGroups()) {
+						deleteAppsForGroupDeployment(g.getId());
+					}
+				}
+				else {
+					deleteAppsForGroupDeployment(group.getId());
+				}
+			} catch (MarathonException e) {
+				throw new RuntimeException(e);
+			}
 		}
-		catch (MarathonException e) {
-			throw new RuntimeException(e);
+		else {
+			logger.info("Undeploying application deployment: {}", id);
+			try {
+				App app = marathon.getApp(id).getApp();
+				logger.debug("Deleting application: {}", app.getId());
+				marathon.deleteApp(id);
+				deleteTopLevelGroupForDeployment(id);
+			} catch (MarathonException e) {
+				if (e.getMessage().contains("Not Found")) {
+					logger.debug("Caught: {}", e.getMessage());
+					try {
+						deleteAppsForGroupDeployment(id);
+					} catch (MarathonException e2) {
+						throw new RuntimeException(e2);
+					}
+				}
+				else {
+					throw new RuntimeException(e);
+				}
+			}
 		}
+	}
 
+	private void deleteAppsForGroupDeployment(String groupId) throws MarathonException {
+		Group group = marathon.getGroup(groupId);
+		for (App app : group.getApps()) {
+			logger.debug("Deleting application {} in group {}", app.getId(), groupId);
+			marathon.deleteApp(app.getId());
+		}
+		group = marathon.getGroup(groupId);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Group {} has {} applications and {} groups", group.getId(), group.getApps().size(), group.getGroups().size());
+		}
+		if (group.getApps().size() == 0 && group.getGroups().size() == 0) {
+			logger.info("Deleting group: {}", groupId);
+			marathon.deleteGroup(groupId);
+		}
+		deleteTopLevelGroupForDeployment(groupId);
+	}
+
+	private void deleteTopLevelGroupForDeployment(String id) throws MarathonException {
+		String topLevelGroupId = extractGroupId(id);
+		if (topLevelGroupId != null) {
+			Group topGroup = marathon.getGroup(topLevelGroupId);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Top level group {} has {} applications and {} groups", topGroup.getId(), topGroup.getApps().size(), topGroup.getGroups().size());
+			}
+			if (topGroup.getApps().size() == 0 && topGroup.getGroups().size() == 0) {
+				logger.info("Deleting group: {}", topLevelGroupId);
+				marathon.deleteGroup(topLevelGroupId);
+			}
+		}
 	}
 
 	@Override
@@ -145,14 +240,24 @@ public class MarathonAppDeployer implements AppDeployer {
 		AppStatus status;
 		try {
 			App app = marathon.getApp(id).getApp();
-			status = buildStatus(id, app);
-		}
-		catch (MarathonException e) {
+			logger.debug("Building status for app: {}", id);
+			status = buildAppStatus(id, app);
+		} catch (MarathonException e) {
 			if (e.getMessage().contains("Not Found")) {
-				status = AppStatus.of(id).build();
+				try {
+					Group group = marathon.getGroup(id);
+					logger.debug("Building status for group: {}", id);
+					AppStatus.Builder result = AppStatus.of(id);
+					for (App app : group.getApps()) {
+						result.with(buildInstanceStatus(app.getId()));
+					}
+					status = result.build();
+				} catch (MarathonException e1) {
+					status = AppStatus.of(id).build();
+				}
 			}
 			else {
-				throw new RuntimeException(e);
+				status = AppStatus.of(id).build();
 			}
 		}
 		logger.debug("Status for app: {} is {}", id, status);
@@ -163,11 +268,20 @@ public class MarathonAppDeployer implements AppDeployer {
 		String groupId = request.getDeploymentProperties().get(GROUP_PROPERTY_KEY);
 		String name = request.getDefinition().getName();
 		if (groupId != null) {
-			return groupId + "-" + name;
+			return "/" + groupId + "/" + name;
 		}
 		else {
-			return name;
+			return "/" + name;
 		}
+	}
+
+	private String extractGroupId(String appId) {
+		int index = appId.lastIndexOf('/');
+		String groupId = null;
+		if (index > 0) {
+			groupId = appId.substring(0, index);
+		}
+		return groupId;
 	}
 
 	private Double deduceMemory(AppDeploymentRequest request) {
@@ -182,13 +296,32 @@ public class MarathonAppDeployer implements AppDeployer {
 
 	private Integer deduceInstances(AppDeploymentRequest request) {
 		String value = request.getDeploymentProperties().get(COUNT_PROPERTY_KEY);
-		return value != null ? Integer.valueOf(value) :Integer.valueOf("1");
+		return value != null ? Integer.valueOf(value) : Integer.valueOf("1");
 	}
 
+	private AppInstanceStatus buildInstanceStatus(String id) throws MarathonException {
+		App appInstance = marathon.getApp(id).getApp();
+		logger.debug("Deployment " + id + " has " + appInstance.getTasksRunning() + "/" + appInstance.getInstances() + " tasks running");
+		if (appInstance.getTasks() != null) {
+			// there should only be one task for this type of deployment
+			MarathonAppInstanceStatus status = null;
+			for (Task task : appInstance.getTasks()) {
+				if (status == null) {
+					status = MarathonAppInstanceStatus.up(appInstance, task);
+				}
+			}
+			if (status == null) {
+				status = MarathonAppInstanceStatus.down(appInstance);
+			}
+			return status;
+		}
+		else {
+			return MarathonAppInstanceStatus.down(appInstance);
+		}
+	}
 
-
-	private AppStatus buildStatus(String id, App app) {
-		logger.debug("App " + id + " has " + app.getTasksRunning() + "/" + app.getInstances() + " tasks running");
+	private AppStatus buildAppStatus(String id, App app) {
+		logger.debug("Deployment " + id + " has " + app.getTasksRunning() + "/" + app.getInstances() + " tasks running");
 		AppStatus.Builder result = AppStatus.of(id);
 		int requestedInstances = app.getInstances();
 		int actualInstances = 0;
