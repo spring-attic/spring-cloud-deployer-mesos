@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.deployer.spi.mesos.marathon;
+package org.springframework.cloud.deployer.spi.mesos.chronos;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
- * Configuration properties for connecting to a Marathon installation.
+ * Configuration properties for interacting with a Chronos service.
  *
- * @author Eric Bottard
  * @author Thomas Risberg
  */
-@ConfigurationProperties("spring.cloud.deployer.mesos.marathon")
-public class MarathonAppDeployerProperties {
+@ConfigurationProperties("spring.cloud.deployer.mesos.chronos")
+public class ChronosTaskLauncherProperties {
 
 	/**
-	 * The location of the Marathon REST endpoint.
+	 * The location of the Chronos REST endpoint.
 	 */
-	private String apiEndpoint = "http://m1.dcos/service/marathon";
+	private String apiEndpoint = "http://m1.dcos/service/chronos";
 
 	/**
 	 * Secrets for a access a private registry to pull images.
 	 */
-	private String imagePullSecret;
+	private String[] uris;
 
 	/**
 	 * How much memory to allocate per module, can be overridden at deployment time.
@@ -76,12 +75,12 @@ public class MarathonAppDeployerProperties {
 		this.apiEndpoint = apiEndpoint;
 	}
 
-	public String getImagePullSecret() {
-		return imagePullSecret;
+	public String[] getUris() {
+		return uris;
 	}
 
-	public void setImagePullSecret(String imagePullSecret) {
-		this.imagePullSecret = imagePullSecret;
+	public void setUris(String[] uris) {
+		this.uris = uris;
 	}
 
 	public String[] getEnvironmentVariables() {

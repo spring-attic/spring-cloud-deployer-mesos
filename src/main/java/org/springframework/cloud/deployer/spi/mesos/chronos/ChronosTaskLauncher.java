@@ -14,20 +14,28 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.deployer.spi.mesos.marathon;
+package org.springframework.cloud.deployer.spi.mesos.chronos;
 
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskStatus;
+import org.springframework.cloud.mesos.chronos.client.Chronos;
 
 /**
  * A task launcher that targets Mesos.
  *
  * @author Thomas Risberg
  */
-public class MesosTaskLauncher implements TaskLauncher {
+public class ChronosTaskLauncher implements TaskLauncher {
 
-	//TODO: WIP
+	private ChronosTaskLauncherProperties properties = new ChronosTaskLauncherProperties();
+
+	private Chronos chronos;
+
+	public ChronosTaskLauncher(ChronosTaskLauncherProperties properties, Chronos chronos) {
+		this.properties = properties;
+		this.chronos = chronos;
+	}
 
 	@Override
 	public String launch(AppDeploymentRequest request) {

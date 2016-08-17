@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.deployer.spi.mesos.marathon;
+package org.springframework.cloud.deployer.spi.mesos;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.deployer.spi.app.AppDeployer;
+import org.springframework.cloud.deployer.spi.mesos.chronos.ChronosTaskLauncherProperties;
+import org.springframework.cloud.deployer.spi.mesos.marathon.MarathonAppDeployer;
+import org.springframework.cloud.deployer.spi.mesos.marathon.MarathonAppDeployerProperties;
+import org.springframework.cloud.deployer.spi.mesos.chronos.ChronosTaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
+import org.springframework.cloud.mesos.chronos.client.Chronos;
+import org.springframework.cloud.mesos.chronos.client.ChronosClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
@@ -29,34 +35,42 @@ import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.MarathonClient;
 
 /**
- * Spring Bean configuration for the {@link MarathonAppDeployer}.
+ * Spring Bean configuration for Mesos {@link MarathonAppDeployer} and {@link ChronosTaskLauncher}.
  *
  * @author Florian Rosenberg
  * @author Thomas Risberg
  */
 @Configuration
-@EnableConfigurationProperties(MarathonAppDeployerProperties.class)
+@EnableConfigurationProperties({MarathonAppDeployerProperties.class, ChronosTaskLauncherProperties.class})
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
-public class MarathonAutoConfiguration {
+public class MesosAutoConfiguration {
 	
 	@Autowired
-	private MarathonAppDeployerProperties properties;
+	private MarathonAppDeployerProperties marathonProperties;
+
+	@Autowired
+	private ChronosTaskLauncherProperties chronosProperties;
 
 	@Bean
 	public Marathon marathon() {
-		Marathon marathon = MarathonClient.getInstance(properties.getApiEndpoint());
+		Marathon marathon = MarathonClient.getInstance(marathonProperties.getApiEndpoint());
 		return marathon;
 	}
 
 	@Bean
 	public AppDeployer appDeployer(Marathon marathon) {
-		return new MarathonAppDeployer(properties, marathon);
+		return new MarathonAppDeployer(marathonProperties, marathon);
 	}
 
 	@Bean
-	public TaskLauncher taskDeployer(Marathon marathon) {
-		// Return NO-OP instance for now, to satisfy server application wiring
-		return new MesosTaskLauncher();
+	public Chronos chronos() {
+		Chronos chronos = ChronosClient.getInstance(chronosProperties.getApiEndpoint());
+		return chronos;
+	}
+
+	@Bean
+	public TaskLauncher taskDeployer(Chronos chronos) {
+		return new ChronosTaskLauncher(chronosProperties, chronos);
 	}
 
 
