@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.cloud.deployer.resource.docker.DockerResource;
 import org.springframework.cloud.deployer.spi.app.AppDeployer;
+import org.springframework.cloud.deployer.spi.mesos.MesosAutoConfiguration;
 import org.springframework.cloud.deployer.spi.test.AbstractAppDeployerIntegrationTests;
 import org.springframework.core.io.Resource;
 
@@ -30,7 +31,7 @@ import org.springframework.core.io.Resource;
  *
  * @author Thomas Risberg
  */
-@SpringApplicationConfiguration(classes = {MarathonAutoConfiguration.class})
+@SpringApplicationConfiguration(classes = {MesosAutoConfiguration.class})
 public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegrationTests {
 
 	@Autowired

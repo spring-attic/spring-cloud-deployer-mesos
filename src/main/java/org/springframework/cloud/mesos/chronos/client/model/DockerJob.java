@@ -14,33 +14,22 @@
  * limitations under the License.
  */
 
-package org.springframework.cloud.deployer.spi.mesos.marathon;
-
-import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
-import org.springframework.cloud.deployer.spi.task.TaskLauncher;
-import org.springframework.cloud.deployer.spi.task.TaskStatus;
+package org.springframework.cloud.mesos.chronos.client.model;
 
 /**
- * A task launcher that targets Mesos.
+ * Class defining a Docker {@link Job} to be used with Chronos.
  *
  * @author Thomas Risberg
  */
-public class MesosTaskLauncher implements TaskLauncher {
+public class DockerJob extends Job {
 
-	//TODO: WIP
+	DockerContainer container;
 
-	@Override
-	public String launch(AppDeploymentRequest request) {
-		return null;
+	public DockerContainer getContainer() {
+		return container;
 	}
 
-	@Override
-	public void cancel(String id) {
-
-	}
-
-	@Override
-	public TaskStatus status(String id) {
-		return null;
+	public void setContainer(DockerContainer container) {
+		this.container = container;
 	}
 }
