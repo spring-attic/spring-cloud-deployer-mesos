@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.mesos.chronos.client.model;
 
-import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Class defining a Job to be used with Chronos.
@@ -48,9 +48,9 @@ public class Job extends AbstractModel {
 	private Boolean softError;
 	private Boolean dataProcessingJobType;
 	private Integer errorsSinceLastSuccess;
-	private Collection<String> uris;
-	private Collection<String> environmentVariables;
-	private Collection<String> arguments;
+	private List<String> uris;
+	private List<Map<String, String>> environmentVariables;
+	private List<String> arguments;
 	private Boolean highPriority;
 	private String runAsUser;
 	private List<List<String>> constraints;
@@ -233,27 +233,27 @@ public class Job extends AbstractModel {
 		this.errorsSinceLastSuccess = errorsSinceLastSuccess;
 	}
 
-	public Collection<String> getUris() {
+	public List<String> getUris() {
 		return uris;
 	}
 
-	public void setUris(Collection<String> uris) {
+	public void setUris(List<String> uris) {
 		this.uris = uris;
 	}
 
-	public Collection<String> getEnvironmentVariables() {
+	public List<Map<String, String>> getEnvironmentVariables() {
 		return environmentVariables;
 	}
 
-	public void setEnvironmentVariables(Collection<String> environmentVariables) {
+	public void setEnvironmentVariables(List<Map<String, String>> environmentVariables) {
 		this.environmentVariables = environmentVariables;
 	}
 
-	public Collection<String> getArguments() {
+	public List<String> getArguments() {
 		return arguments;
 	}
 
-	public void setArguments(Collection<String> arguments) {
+	public void setArguments(List<String> arguments) {
 		this.arguments = arguments;
 	}
 

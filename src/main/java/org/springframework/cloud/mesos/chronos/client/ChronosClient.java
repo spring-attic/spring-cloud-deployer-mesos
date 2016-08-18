@@ -18,14 +18,22 @@ package org.springframework.cloud.mesos.chronos.client;
 
 import static java.util.Arrays.asList;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.Collection;
+
 import org.springframework.cloud.mesos.chronos.client.model.AbstractModel;
+import org.springframework.util.MimeTypeUtils;
 
 import feign.Feign;
 import feign.Feign.Builder;
+import feign.FeignException;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import feign.Response;
 import feign.auth.BasicAuthRequestInterceptor;
+import feign.codec.DecodeException;
+import feign.codec.Decoder;
 import feign.codec.ErrorDecoder;
 import feign.gson.GsonDecoder;
 import feign.gson.GsonEncoder;
@@ -41,7 +49,7 @@ public class ChronosClient {
 	static class ChronosHeadersInterceptor implements RequestInterceptor {
 		@Override
 		public void apply(RequestTemplate template) {
-			template.header("Accept", "application/json");
+			//template.header("Accept", "application/json");
 			template.header("Content-Type", "application/json");
 		}
 	}
@@ -69,7 +77,7 @@ public class ChronosClient {
 	public static Chronos getInstance(String endpoint, RequestInterceptor... interceptors) {
 		Builder b = Feign.builder()
 				.encoder(new GsonEncoder(AbstractModel.GSON))
-				.decoder(new GsonDecoder(AbstractModel.GSON))
+				.decoder(new MultiDecoder())
 				.errorDecoder(new ChronosErrorDecoder());
 		if (interceptors != null) {
 			b.requestInterceptors(asList(interceptors));
@@ -83,5 +91,23 @@ public class ChronosClient {
 	 */
 	public static Chronos getInstanceWithBasicAuth(String endpoint, String username, String password) {
 		return getInstance(endpoint,new BasicAuthRequestInterceptor(username,password));
+	}
+
+	public static class MultiDecoder implements Decoder {
+
+		GsonDecoder gsonDecoder = new GsonDecoder(AbstractModel.GSON);
+
+		Decoder defaultDecoder = new Default();
+
+		@Override
+		public Object decode(Response response, Type type) throws IOException, DecodeException, FeignException {
+			Collection<String> contentTypes = response.headers().get("Content-Type");
+			if (contentTypes.contains(MimeTypeUtils.TEXT_PLAIN.toString())) {
+				return defaultDecoder.decode(response, type);
+			}
+			else {
+				return gsonDecoder.decode(response, type);
+			}
+		}
 	}
 }

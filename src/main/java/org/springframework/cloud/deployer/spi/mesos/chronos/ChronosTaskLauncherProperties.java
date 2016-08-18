@@ -51,6 +51,16 @@ public class ChronosTaskLauncherProperties {
 	 */
 	private String[] environmentVariables = new String[]{};
 
+	/**
+	 * Email address for task owner.
+	 */
+	private String ownerEmail;
+
+	/**
+	 * Name of task owner.
+	 */
+	private String ownerName;
+
 	public double getMemory() {
 		return memory;
 	}
@@ -89,5 +99,21 @@ public class ChronosTaskLauncherProperties {
 
 	public void setEnvironmentVariables(String[] environmentVariables) {
 		this.environmentVariables = environmentVariables;
+	}
+
+	public String getOwnerEmail() {
+		return ownerEmail;
+	}
+
+	public void setOwnerEmail(String ownerEmail) {
+		this.ownerEmail = ownerEmail;
+	}
+
+	public String getOwnerName() {
+		return ownerName;
+	}
+
+	public void setOwnerName(String ownerName) {
+		this.ownerName = ownerName;
 	}
 }

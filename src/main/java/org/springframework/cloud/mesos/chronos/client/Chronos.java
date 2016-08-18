@@ -18,8 +18,10 @@ package org.springframework.cloud.mesos.chronos.client;
 
 import java.util.List;
 
+import org.springframework.cloud.mesos.chronos.client.model.DockerJob;
 import org.springframework.cloud.mesos.chronos.client.model.Job;
 
+import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
 
@@ -33,8 +35,15 @@ public interface Chronos {
 	@RequestLine("GET /scheduler/jobs")
 	List<Job> getJobs() throws ChronosException;
 
+	@RequestLine("GET /scheduler/graph/csv")
+	@Headers("Accept: text/plain")
+	String getGraphCsv() throws ChronosException;
+
 	@RequestLine("POST /scheduler/iso8601")
 	void createJob(Job job) throws ChronosException;
+
+	@RequestLine("POST /scheduler/iso8601")
+	void createDockerJob(DockerJob job) throws ChronosException;
 
 	@RequestLine("PUT /scheduler/job/{jobName}")
 	void startJob(@Param("jobName") String jobName) throws ChronosException;

@@ -45,13 +45,24 @@ public class ChronosClientTests {
 	@Test
 	public void testClientAddJob() throws ChronosException {
 		stubFor(post(urlEqualTo("/scheduler/iso8601")).willReturn(aResponse()));
+		Job job = new Job();
+		job.setName("test");
+		job.setOwner("test@example.com");
+		job.setCommand("ls");
+		job.setSchedule("R1//P");
+		client.createJob(job);
+	}
+
+	@Test
+	public void testClientAddDockerJob() throws ChronosException {
+		stubFor(post(urlEqualTo("/scheduler/iso8601")).willReturn(aResponse()));
 		DockerJob job = new DockerJob();
 		job.setName("test");
 		job.setOwner("test@example.com");
-		job.setCommand("docker run -e SPRING_APPLICATION_JSON='{\"killDelay\":\"10000\",\"exitCode\":\"0\"}' springcloud/spring-cloud-deployer-spi-test-app");
+		job.setCommand("");
 		job.setSchedule("R1//P");
 		DockerContainer container = new DockerContainer();
-		container.setImage("docker pull springcloud/spring-cloud-deployer-spi-test-app");
+		container.setImage("springcloud/spring-cloud-deployer-spi-test-app");
 		job.setContainer(container);
 		client.createJob(job);
 	}

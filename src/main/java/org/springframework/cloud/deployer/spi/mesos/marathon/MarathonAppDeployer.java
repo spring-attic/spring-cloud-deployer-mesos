@@ -31,8 +31,9 @@ import mesosphere.marathon.client.model.v2.HealthCheck;
 import mesosphere.marathon.client.model.v2.Port;
 import mesosphere.marathon.client.model.v2.Task;
 import mesosphere.marathon.client.utils.MarathonException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.deployer.spi.app.AppDeployer;
@@ -52,7 +53,7 @@ import org.springframework.util.Assert;
  */
 public class MarathonAppDeployer implements AppDeployer {
 
-	private static final Logger logger = LoggerFactory.getLogger(MarathonAppDeployer.class);
+	private static final Log logger = LogFactory.getLog(MarathonAppDeployer.class);
 
 	private MarathonAppDeployerProperties properties = new MarathonAppDeployerProperties();
 
@@ -68,7 +69,7 @@ public class MarathonAppDeployer implements AppDeployer {
 	@Override
 	public String deploy(AppDeploymentRequest request) {
 
-		logger.info("Deploying app: {}", request.getDefinition().getName());
+		logger.info(String.format("Deploying app: %s", request.getDefinition().getName()));
 
 		String appId = deduceAppId(request);
 
@@ -131,7 +132,7 @@ public class MarathonAppDeployer implements AppDeployer {
 		healthCheck.setGracePeriodSeconds(300);
 		app.setHealthChecks(Arrays.asList(healthCheck));
 
-		logger.debug("Creating app with definition: " + app.toString());
+		logger.debug("Creating app with definition:\n" + app.toString());
 		try {
 			marathon.createApp(app);
 		}
@@ -161,13 +162,13 @@ public class MarathonAppDeployer implements AppDeployer {
 
 	@Override
 	public void undeploy(String id) {
-		logger.info("Undeploying app: {}", id);
+		logger.info(String.format("Undeploying app: %s", id));
 		Group group = null;
 		try {
 			group = marathon.getGroup(id);
 		} catch (MarathonException ignore) {}
 		if (group != null) {
-			logger.info("Undeploying application deployments for group: {}", group.getId());
+			logger.info(String.format("Undeploying application deployments for group: %s", group.getId()));
 			try {
 				if (group.getGroups().size() > 0) {
 					for (Group g : group.getGroups()) {
@@ -182,15 +183,15 @@ public class MarathonAppDeployer implements AppDeployer {
 			}
 		}
 		else {
-			logger.info("Undeploying application deployment: {}", id);
+			logger.info(String.format("Undeploying application deployment: %s", id));
 			try {
 				App app = marathon.getApp(id).getApp();
-				logger.debug("Deleting application: {}", app.getId());
+				logger.debug(String.format("Deleting application: %s", app.getId()));
 				marathon.deleteApp(id);
 				deleteTopLevelGroupForDeployment(id);
 			} catch (MarathonException e) {
 				if (e.getMessage().contains("Not Found")) {
-					logger.debug("Caught: {}", e.getMessage());
+					logger.debug(String.format("Caught: %s", e.getMessage()));
 					try {
 						deleteAppsForGroupDeployment(id);
 					} catch (MarathonException e2) {
@@ -207,15 +208,16 @@ public class MarathonAppDeployer implements AppDeployer {
 	private void deleteAppsForGroupDeployment(String groupId) throws MarathonException {
 		Group group = marathon.getGroup(groupId);
 		for (App app : group.getApps()) {
-			logger.debug("Deleting application {} in group {}", app.getId(), groupId);
+			logger.debug(String.format("Deleting application %s in group %s", app.getId(), groupId));
 			marathon.deleteApp(app.getId());
 		}
 		group = marathon.getGroup(groupId);
 		if (logger.isDebugEnabled()) {
-			logger.debug("Group {} has {} applications and {} groups", group.getId(), group.getApps().size(), group.getGroups().size());
+			logger.debug(String.format("Group %s has %d applications and %d groups", group.getId(),
+					group.getApps().size(), group.getGroups().size()));
 		}
 		if (group.getApps().size() == 0 && group.getGroups().size() == 0) {
-			logger.info("Deleting group: {}", groupId);
+			logger.info(String.format("Deleting group: %s", groupId));
 			marathon.deleteGroup(groupId);
 		}
 		deleteTopLevelGroupForDeployment(groupId);
@@ -226,10 +228,11 @@ public class MarathonAppDeployer implements AppDeployer {
 		if (topLevelGroupId != null) {
 			Group topGroup = marathon.getGroup(topLevelGroupId);
 			if (logger.isDebugEnabled()) {
-				logger.debug("Top level group {} has {} applications and {} groups", topGroup.getId(), topGroup.getApps().size(), topGroup.getGroups().size());
+				logger.debug(String.format("Top level group %s has %d applications and %d groups", topGroup.getId(),
+						topGroup.getApps().size(), topGroup.getGroups().size()));
 			}
 			if (topGroup.getApps().size() == 0 && topGroup.getGroups().size() == 0) {
-				logger.info("Deleting group: {}", topLevelGroupId);
+				logger.info(String.format("Deleting group: %s", topLevelGroupId));
 				marathon.deleteGroup(topLevelGroupId);
 			}
 		}
@@ -240,13 +243,13 @@ public class MarathonAppDeployer implements AppDeployer {
 		AppStatus status;
 		try {
 			App app = marathon.getApp(id).getApp();
-			logger.debug("Building status for app: {}", id);
+			logger.debug(String.format("Building status for app: %s", id));
 			status = buildAppStatus(id, app);
 		} catch (MarathonException e) {
 			if (e.getMessage().contains("Not Found")) {
 				try {
 					Group group = marathon.getGroup(id);
-					logger.debug("Building status for group: {}", id);
+					logger.debug(String.format("Building status for group: %s", id));
 					AppStatus.Builder result = AppStatus.of(id);
 					for (App app : group.getApps()) {
 						result.with(buildInstanceStatus(app.getId()));
@@ -260,7 +263,7 @@ public class MarathonAppDeployer implements AppDeployer {
 				status = AppStatus.of(id).build();
 			}
 		}
-		logger.debug("Status for app: {} is {}", id, status);
+		logger.debug(String.format("Status for app: %s is %s", id, status));
 		return status;
 	}
 
