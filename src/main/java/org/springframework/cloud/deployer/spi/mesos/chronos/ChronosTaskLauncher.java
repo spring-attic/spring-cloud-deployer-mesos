@@ -155,9 +155,8 @@ public class ChronosTaskLauncher implements TaskLauncher {
 		return status;
 	}
 
-	//	@Override
+	//@Override // For future use -- we have discussed adding this method to the TaskLauncher interface.
 	public void cleanup(String... id) {
-
 		Set<String> ids = new HashSet(Arrays.asList(id));
 		for (String jobName : ids) {
 			try {
@@ -166,7 +165,6 @@ public class ChronosTaskLauncher implements TaskLauncher {
 				throw new IllegalStateException(String.format("Error while deleting job '%s'", jobName), e);
 			}
 		}
-
 	}
 
 	protected String createDeploymentId(AppDeploymentRequest request) {

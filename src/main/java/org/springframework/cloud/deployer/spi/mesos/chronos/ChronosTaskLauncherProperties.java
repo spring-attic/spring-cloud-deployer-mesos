@@ -32,7 +32,7 @@ public class ChronosTaskLauncherProperties {
 	private String apiEndpoint = "http://m1.dcos/service/chronos";
 
 	/**
-	 * Secrets for a access a private registry to pull images.
+	 * URIs for artifacts to be downloaded when the task is started.
 	 */
 	private String[] uris;
 

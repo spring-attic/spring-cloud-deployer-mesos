@@ -49,7 +49,6 @@ public class ChronosClient {
 	static class ChronosHeadersInterceptor implements RequestInterceptor {
 		@Override
 		public void apply(RequestTemplate template) {
-			//template.header("Accept", "application/json");
 			template.header("Content-Type", "application/json");
 		}
 	}
@@ -57,8 +56,6 @@ public class ChronosClient {
 	static class ChronosErrorDecoder implements ErrorDecoder {
 		@Override
 		public Exception decode(String methodKey, Response response) {
-			System.out.println(methodKey);
-			System.out.println(response);
 			return new ChronosException(response.status(), response.reason());
 		}
 	}
@@ -71,8 +68,7 @@ public class ChronosClient {
 	 * The generalized version of the method that allows more in-depth customizations via
 	 * {@link RequestInterceptor}s.
 	 *
-	 * @param endpoint
-	 * 		URL of Chronos
+	 * @param endpoint URL for Chronos API
 	 */
 	public static Chronos getInstance(String endpoint, RequestInterceptor... interceptors) {
 		Builder b = Feign.builder()
@@ -90,7 +86,7 @@ public class ChronosClient {
 	 * Creates a Chronos client proxy that performs HTTP basic authentication.
 	 */
 	public static Chronos getInstanceWithBasicAuth(String endpoint, String username, String password) {
-		return getInstance(endpoint,new BasicAuthRequestInterceptor(username,password));
+		return getInstance(endpoint, new BasicAuthRequestInterceptor(username, password));
 	}
 
 	public static class MultiDecoder implements Decoder {
