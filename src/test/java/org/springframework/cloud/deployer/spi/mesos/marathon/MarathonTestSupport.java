@@ -16,21 +16,21 @@
 
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import mesosphere.marathon.client.Marathon;
+import mesosphere.marathon.client.MarathonClient;
+
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.stream.test.junit.AbstractExternalResourceTestSupport;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import mesosphere.marathon.client.Marathon;
-import mesosphere.marathon.client.MarathonClient;
-
 /**
  * JUnit {@link org.junit.Rule} that detects the fact that a Marathon installation is available.
  *
  * @author Thomas Risberg
+ * @author Eric Bottard
  */
 public class MarathonTestSupport extends AbstractExternalResourceTestSupport<Marathon> {
 
@@ -48,13 +48,12 @@ public class MarathonTestSupport extends AbstractExternalResourceTestSupport<Mar
 
 	@Override
 	protected void obtainResource() throws Exception {
-		context = SpringApplication.run(Config.class);
+		context = new SpringApplicationBuilder(Config.class).web(false).run();
 		resource = context.getBean(Marathon.class);
 		resource.getServerInfo();
 	}
 
 	@Configuration
-	@EnableAutoConfiguration
 	@EnableConfigurationProperties(MarathonAppDeployerProperties.class)
 	public static class Config {
 
