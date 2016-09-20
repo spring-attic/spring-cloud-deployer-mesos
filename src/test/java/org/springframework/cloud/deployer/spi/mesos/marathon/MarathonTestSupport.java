@@ -21,10 +21,13 @@ import mesosphere.marathon.client.MarathonClient;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.deployer.spi.mesos.dcos.DcosClusterProperties;
+import org.springframework.cloud.mesos.dcos.client.DcosHeadersInterceptor;
 import org.springframework.cloud.stream.test.junit.AbstractExternalResourceTestSupport;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 /**
  * JUnit {@link org.junit.Rule} that detects the fact that a Marathon installation is available.
@@ -40,7 +43,6 @@ public class MarathonTestSupport extends AbstractExternalResourceTestSupport<Mar
 		super("MARATHON");
 	}
 
-
 	@Override
 	protected void cleanupResource() throws Exception {
 		context.close();
@@ -54,13 +56,19 @@ public class MarathonTestSupport extends AbstractExternalResourceTestSupport<Mar
 	}
 
 	@Configuration
-	@EnableConfigurationProperties(MarathonAppDeployerProperties.class)
+	@EnableConfigurationProperties({MarathonAppDeployerProperties.class, DcosClusterProperties.class})
 	public static class Config {
 
 		@Bean
-		public Marathon marathon(MarathonAppDeployerProperties properties) {
-			Marathon marathon = MarathonClient.getInstance(properties.getApiEndpoint());
-			return marathon;
+		public Marathon marathon(MarathonAppDeployerProperties marathonProperties,
+		                         DcosClusterProperties dcosClusterProperties) {
+			if (StringUtils.hasText(dcosClusterProperties.getAuthorizationToken())) {
+				return MarathonClient.getInstance(marathonProperties.getApiEndpoint(),
+						new DcosHeadersInterceptor(dcosClusterProperties.getAuthorizationToken()));
+			}
+			else {
+				return MarathonClient.getInstance(marathonProperties.getApiEndpoint());
+			}
 		}
 	}
 }

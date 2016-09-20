@@ -19,16 +19,15 @@ package org.springframework.cloud.deployer.spi.mesos.chronos;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.cloud.deployer.spi.mesos.marathon.MarathonAppDeployerProperties;
+import org.springframework.cloud.deployer.spi.mesos.dcos.DcosClusterProperties;
 import org.springframework.cloud.mesos.chronos.client.Chronos;
 import org.springframework.cloud.mesos.chronos.client.ChronosClient;
+import org.springframework.cloud.mesos.dcos.client.DcosHeadersInterceptor;
 import org.springframework.cloud.stream.test.junit.AbstractExternalResourceTestSupport;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import mesosphere.marathon.client.Marathon;
-import mesosphere.marathon.client.MarathonClient;
+import org.springframework.util.StringUtils;
 
 /**
  * JUnit {@link org.junit.Rule} that detects the fact that a Chronos installation is available.
@@ -58,13 +57,19 @@ public class ChronosTestSupport extends AbstractExternalResourceTestSupport<Chro
 
 	@Configuration
 	@EnableAutoConfiguration
-	@EnableConfigurationProperties(ChronosTaskLauncherProperties.class)
+	@EnableConfigurationProperties({ChronosTaskLauncherProperties.class, DcosClusterProperties.class})
 	public static class Config {
 
 		@Bean
-		public Chronos chronos(ChronosTaskLauncherProperties properties) {
-			Chronos chronos = ChronosClient.getInstance(properties.getApiEndpoint());
-			return chronos;
+		public Chronos chronos(ChronosTaskLauncherProperties taskLauncherProperties,
+		                       DcosClusterProperties dcosClusterProperties) {
+			if (StringUtils.hasText(dcosClusterProperties.getAuthorizationToken())) {
+				return ChronosClient.getInstance(taskLauncherProperties.getApiEndpoint(),
+						new DcosHeadersInterceptor(dcosClusterProperties.getAuthorizationToken()));
+			}
+			else {
+				return ChronosClient.getInstance(taskLauncherProperties.getApiEndpoint());
+			}
 		}
 	}
 }

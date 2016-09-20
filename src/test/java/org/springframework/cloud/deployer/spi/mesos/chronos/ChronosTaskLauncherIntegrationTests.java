@@ -32,12 +32,15 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.springframework.aop.framework.Advised;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.cloud.deployer.resource.docker.DockerResource;
 import org.springframework.cloud.deployer.spi.core.AppDefinition;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
 import org.springframework.cloud.deployer.spi.mesos.MesosAutoConfiguration;
+import org.springframework.cloud.deployer.spi.mesos.TestConfig;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskStatus;
 import org.springframework.core.io.Resource;
@@ -54,7 +57,7 @@ import static org.springframework.cloud.deployer.spi.test.EventuallyMatcher.even
  *
  * @author Thomas Risberg
  */
-@SpringApplicationConfiguration(classes = {MesosAutoConfiguration.class})
+@SpringApplicationConfiguration(classes = {TestConfig.class, MesosAutoConfiguration.class})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class ChronosTaskLauncherIntegrationTests {
 	private static final Log logger = LogFactory.getLog(ChronosTaskLauncherIntegrationTests.class);
@@ -66,7 +69,7 @@ public class ChronosTaskLauncherIntegrationTests {
 	public static ChronosTestSupport chronosAvailable = new ChronosTestSupport();
 
 	@Test
-	public void testSimpleLaunch() {
+	public void testSimpleLaunch() throws Exception {
 		logger.info(String.format("Testing %s...", "SimpleLaunch"));
 		Map<String, String> properties = new HashMap<>();
 		properties.put("killDelay", "1000");
@@ -82,11 +85,11 @@ public class ChronosTaskLauncherIntegrationTests {
 		assertThat(deploymentId, eventually(hasStatusThat(
 				Matchers.<TaskStatus>hasProperty("state", is(complete))), timeout.maxAttempts, timeout.pause));
 
-		((ChronosTaskLauncher)taskLauncher).cleanup(deploymentId);
+		((ChronosTaskLauncher)getTargetObject(taskLauncher)).cleanup(deploymentId);
 	}
 
 	@Test
-	public void testReLaunch() {
+	public void testReLaunch() throws Exception {
 		logger.info(String.format("Testing %s...", "ReLaunch"));
 		Map<String, String> properties = new HashMap<>();
 		properties.put("killDelay", "1000");
@@ -106,11 +109,11 @@ public class ChronosTaskLauncherIntegrationTests {
 		Assert.assertThat(deploymentId, eventually(hasStatusThat(
 				Matchers.<TaskStatus>hasProperty("state", Matchers.is(complete))), timeout.maxAttempts, timeout.pause));
 
-		((ChronosTaskLauncher)taskLauncher).cleanup(deploymentId);
+		((ChronosTaskLauncher)getTargetObject(taskLauncher)).cleanup(deploymentId);
 	}
 
 	@Test
-	public void testFailedLaunch() {
+	public void testFailedLaunch() throws Exception {
 		logger.info(String.format("Testing %s...", "FailedLaunch"));
 		Map<String, String> properties = new HashMap<>();
 		properties.put("killDelay", "1000");
@@ -126,14 +129,14 @@ public class ChronosTaskLauncherIntegrationTests {
 		Assert.assertThat(deploymentId, eventually(hasStatusThat(
 				Matchers.<TaskStatus>hasProperty("state", Matchers.is(failed))), timeout.maxAttempts, timeout.pause));
 
-		((ChronosTaskLauncher)taskLauncher).cleanup(deploymentId);
+		((ChronosTaskLauncher)getTargetObject(taskLauncher)).cleanup(deploymentId);
 	}
 
 	/**
 	 * Tests that command line args can be passed in.
 	 */
 	@Test
-	public void testCommandLineArgs() {
+	public void testCommandLineArgs() throws Exception {
 		logger.info(String.format("Testing %s...", "CommandLineArgs"));
 		Map<String, String> properties = new HashMap<>();
 		properties.put("killDelay", "1000");
@@ -149,7 +152,7 @@ public class ChronosTaskLauncherIntegrationTests {
 		Assert.assertThat(deploymentId, eventually(hasStatusThat(
 				Matchers.<TaskStatus>hasProperty("state", Matchers.is(complete))), timeout.maxAttempts, timeout.pause));
 
-		((ChronosTaskLauncher)taskLauncher).cleanup(deploymentId);
+		((ChronosTaskLauncher)getTargetObject(taskLauncher)).cleanup(deploymentId);
 	}
 
 	protected String randomName() {
@@ -182,6 +185,14 @@ public class ChronosTaskLauncherIntegrationTests {
 				statusMatcher.describeTo(description);
 			}
 		};
+	}
+
+	protected <T> T getTargetObject(Object proxy) throws Exception {
+		if (AopUtils.isJdkDynamicProxy(proxy)) {
+			return (T) ((Advised) proxy).getTargetSource().getTarget();
+		} else {
+			return (T) proxy;
+		}
 	}
 
 	protected static class Timeout {

@@ -19,17 +19,21 @@ package org.springframework.cloud.deployer.spi.mesos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.deployer.spi.app.AppDeployer;
 import org.springframework.cloud.deployer.spi.mesos.chronos.ChronosTaskLauncherProperties;
+import org.springframework.cloud.deployer.spi.mesos.dcos.DcosClusterProperties;
 import org.springframework.cloud.deployer.spi.mesos.marathon.MarathonAppDeployer;
 import org.springframework.cloud.deployer.spi.mesos.marathon.MarathonAppDeployerProperties;
 import org.springframework.cloud.deployer.spi.mesos.chronos.ChronosTaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.mesos.chronos.client.Chronos;
 import org.springframework.cloud.mesos.chronos.client.ChronosClient;
+import org.springframework.cloud.mesos.dcos.client.DcosHeadersInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.util.StringUtils;
 
 import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.MarathonClient;
@@ -41,7 +45,8 @@ import mesosphere.marathon.client.MarathonClient;
  * @author Thomas Risberg
  */
 @Configuration
-@EnableConfigurationProperties({MarathonAppDeployerProperties.class, ChronosTaskLauncherProperties.class})
+@EnableConfigurationProperties({MarathonAppDeployerProperties.class, ChronosTaskLauncherProperties.class,
+		DcosClusterProperties.class})
 @AutoConfigureOrder(Ordered.HIGHEST_PRECEDENCE)
 public class MesosAutoConfiguration {
 	
@@ -51,27 +56,43 @@ public class MesosAutoConfiguration {
 	@Autowired
 	private ChronosTaskLauncherProperties chronosProperties;
 
+	@Autowired
+	private DcosClusterProperties dcosClusterProperties;
+
 	@Bean
+	@RefreshScope
 	public Marathon marathon() {
-		Marathon marathon = MarathonClient.getInstance(marathonProperties.getApiEndpoint());
-		return marathon;
+		if (StringUtils.hasText(dcosClusterProperties.getAuthorizationToken())) {
+			return MarathonClient.getInstance(marathonProperties.getApiEndpoint(),
+					new DcosHeadersInterceptor(dcosClusterProperties.getAuthorizationToken()));
+		}
+		else {
+			return MarathonClient.getInstance(marathonProperties.getApiEndpoint());
+		}
 	}
 
 	@Bean
+	@RefreshScope
 	public AppDeployer appDeployer(Marathon marathon) {
 		return new MarathonAppDeployer(marathonProperties, marathon);
 	}
 
 	@Bean
+	@RefreshScope
 	public Chronos chronos() {
-		Chronos chronos = ChronosClient.getInstance(chronosProperties.getApiEndpoint());
-		return chronos;
+		if (StringUtils.hasText(dcosClusterProperties.getAuthorizationToken())) {
+			return ChronosClient.getInstance(chronosProperties.getApiEndpoint(),
+					new DcosHeadersInterceptor(dcosClusterProperties.getAuthorizationToken()));
+		}
+		else {
+			return ChronosClient.getInstance(chronosProperties.getApiEndpoint());
+		}
 	}
 
 	@Bean
+	@RefreshScope
 	public TaskLauncher taskDeployer(Chronos chronos) {
 		return new ChronosTaskLauncher(chronosProperties, chronos);
 	}
-
 
 }
