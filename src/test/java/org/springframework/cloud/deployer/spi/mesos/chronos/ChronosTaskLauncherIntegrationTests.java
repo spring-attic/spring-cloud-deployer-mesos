@@ -47,7 +47,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.cloud.deployer.spi.task.LaunchState.complete;
 import static org.springframework.cloud.deployer.spi.task.LaunchState.failed;
 import static org.springframework.cloud.deployer.spi.test.EventuallyMatcher.eventually;
@@ -98,18 +99,19 @@ public class ChronosTaskLauncherIntegrationTests {
 		Resource resource = integrationTestTask();
 		AppDeploymentRequest request = new AppDeploymentRequest(definition, resource);
 		logger.info(String.format("Launching %s...", request.getDefinition().getName()));
-		String deploymentId = taskLauncher.launch(request);
-		logger.info(String.format("Launched %s ", deploymentId));
+		String deploymentId1 = taskLauncher.launch(request);
+		logger.info(String.format("Launched %s ", deploymentId1));
+		String deploymentId2 = taskLauncher.launch(request);
+		logger.info(String.format("Re-launched %s ", deploymentId2));
+		assertThat(deploymentId1, not(is(deploymentId2)));
+
 		Timeout timeout = launchTimeout();
-		Assert.assertThat(deploymentId, eventually(hasStatusThat(
+		Assert.assertThat(deploymentId1, eventually(hasStatusThat(
+				Matchers.<TaskStatus>hasProperty("state", Matchers.is(complete))), timeout.maxAttempts, timeout.pause));
+		Assert.assertThat(deploymentId2, eventually(hasStatusThat(
 				Matchers.<TaskStatus>hasProperty("state", Matchers.is(complete))), timeout.maxAttempts, timeout.pause));
 
-		deploymentId = taskLauncher.launch(request);
-		logger.info(String.format("Re-launched %s ", deploymentId));
-		Assert.assertThat(deploymentId, eventually(hasStatusThat(
-				Matchers.<TaskStatus>hasProperty("state", Matchers.is(complete))), timeout.maxAttempts, timeout.pause));
-
-		((ChronosTaskLauncher)getTargetObject(taskLauncher)).cleanup(deploymentId);
+		((ChronosTaskLauncher)getTargetObject(taskLauncher)).cleanup(deploymentId1, deploymentId2);
 	}
 
 	@Test
@@ -164,7 +166,7 @@ public class ChronosTaskLauncherIntegrationTests {
 	}
 
 	protected Timeout launchTimeout() {
-		return new Timeout(20, 5000);
+		return new Timeout(30, 5000);
 	}
 
 	protected Matcher<String> hasStatusThat(final Matcher<TaskStatus> statusMatcher) {

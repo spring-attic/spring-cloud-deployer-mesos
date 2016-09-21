@@ -46,6 +46,11 @@
 			<artifactId>marathon-client</artifactId>
 			<version>${marathon-client.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.hashids</groupId>
+			<artifactId>hashids</artifactId>
+			<version>1.0.1</version>
+		</dependency>
 		<!--Start force Feign versions -->
 		<dependency>
 			<groupId>com.netflix.feign</groupId>

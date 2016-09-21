@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.hashids.Hashids;
 
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
 import org.springframework.cloud.deployer.spi.task.LaunchState;
@@ -168,7 +169,10 @@ public class ChronosTaskLauncher implements TaskLauncher {
 	}
 
 	protected String createDeploymentId(AppDeploymentRequest request) {
-		return request.getDefinition().getName();
+		String name = request.getDefinition().getName();
+		Hashids hashids = new Hashids(name);
+		String hashid = hashids.encode(System.currentTimeMillis());
+		return name + "-" + hashid;
 	}
 
 	protected Map<String, String> createSpringApplicationJson(AppDeploymentRequest request) {
