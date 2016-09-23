@@ -25,6 +25,7 @@ import org.springframework.cloud.deployer.spi.app.AppDeployer;
 import org.springframework.cloud.deployer.spi.mesos.MesosAutoConfiguration;
 import org.springframework.cloud.deployer.spi.mesos.TestConfig;
 import org.springframework.cloud.deployer.spi.test.AbstractAppDeployerIntegrationTests;
+import org.springframework.cloud.deployer.spi.test.Timeout;
 import org.springframework.core.io.Resource;
 
 /**
@@ -47,6 +48,11 @@ public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegra
 	}
 
 	@Override
+	protected String randomName() {
+		return super.randomName().substring(0, 18);
+	}
+
+	@Override
 	protected Timeout deploymentTimeout() {
 		return new Timeout(36, 10000);
 	}
@@ -57,7 +63,7 @@ public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegra
 	}
 
 	@Override
-	protected Resource integrationTestProcessor() {
+	protected Resource testApplication() {
 		return new DockerResource("springcloud/spring-cloud-deployer-spi-test-app:latest");
 	}
 }
