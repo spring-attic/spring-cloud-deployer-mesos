@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hashids.Hashids;
@@ -42,9 +44,6 @@ import org.springframework.cloud.mesos.chronos.client.model.DockerContainer;
 import org.springframework.cloud.mesos.chronos.client.model.DockerJob;
 import org.springframework.cloud.mesos.chronos.client.model.Job;
 import org.springframework.util.StringUtils;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * A task launcher that targets Mesos Chronos.
@@ -148,6 +147,7 @@ public class ChronosTaskLauncher implements TaskLauncher {
 		for (Job j : list) {
 			if (j.getName().equals(id)) {
 				job = j;
+				break;
 			}
 		}
 		TaskStatus status = buildTaskStatus(properties, id, job, csv);
@@ -229,6 +229,7 @@ public class ChronosTaskLauncher implements TaskLauncher {
 			return new TaskStatus(id, LaunchState.complete, new HashMap<>());
 		}
 		else {
+			// TODO: state == idle could indicate cancelled?
 			return new TaskStatus(id, LaunchState.failed, new HashMap<>());
 		}
 	}

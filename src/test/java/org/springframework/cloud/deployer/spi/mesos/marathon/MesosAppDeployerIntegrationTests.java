@@ -17,6 +17,8 @@
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
 import org.junit.ClassRule;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -25,6 +27,7 @@ import org.springframework.cloud.deployer.spi.app.AppDeployer;
 import org.springframework.cloud.deployer.spi.mesos.MesosAutoConfiguration;
 import org.springframework.cloud.deployer.spi.mesos.TestConfig;
 import org.springframework.cloud.deployer.spi.test.AbstractAppDeployerIntegrationTests;
+import org.springframework.cloud.deployer.spi.test.Timeout;
 import org.springframework.core.io.Resource;
 
 /**
@@ -47,6 +50,18 @@ public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegra
 	}
 
 	@Override
+	protected String randomName() {
+		return super.randomName().toLowerCase(); // Marathon wants lower-case ids
+	}
+
+	@Test
+	@Override
+	@Ignore("Needs to be implemented")
+	public void testCommandLineArgumentsPassing() {
+		super.testCommandLineArgumentsPassing();
+	}
+
+	@Override
 	protected Timeout deploymentTimeout() {
 		return new Timeout(36, 10000);
 	}
@@ -57,7 +72,7 @@ public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegra
 	}
 
 	@Override
-	protected Resource integrationTestProcessor() {
+	protected Resource testApplication() {
 		return new DockerResource("springcloud/spring-cloud-deployer-spi-test-app:latest");
 	}
 }
