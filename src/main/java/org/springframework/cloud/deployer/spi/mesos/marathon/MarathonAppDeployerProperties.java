@@ -52,6 +52,11 @@ public class MarathonAppDeployerProperties {
 	 */
 	private String[] environmentVariables = new String[]{};
 
+	/**
+	 * URIs to set for any deployed app container.
+	 */
+	private String[] uris = new String[]{};
+
 	public double getMemory() {
 		return memory;
 	}
@@ -90,5 +95,13 @@ public class MarathonAppDeployerProperties {
 
 	public void setEnvironmentVariables(String[] environmentVariables) {
 		this.environmentVariables = environmentVariables;
+	}
+
+	public String[] getUris() {
+		return uris;
+	}
+
+	public void setUris(String[] uris) {
+		this.uris = uris;
 	}
 }
