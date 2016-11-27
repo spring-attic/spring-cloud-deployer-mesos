@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
@@ -51,6 +54,12 @@ public class MarathonAppDeployerProperties {
 	 * Environment variables to set for any deployed app container.
 	 */
 	private String[] environmentVariables = new String[]{};
+
+	/**
+	 * URIs to set for any deployed app container (marathon will fetch content at that address and make it available
+	 * to the container).
+	 */
+	private List<String> uris = new ArrayList<>(0);
 
 	public double getMemory() {
 		return memory;
@@ -90,5 +99,13 @@ public class MarathonAppDeployerProperties {
 
 	public void setEnvironmentVariables(String[] environmentVariables) {
 		this.environmentVariables = environmentVariables;
+	}
+
+	public List<String> getUris() {
+		return uris;
+	}
+
+	public void setUris(List<String> uris) {
+		this.uris = uris;
 	}
 }

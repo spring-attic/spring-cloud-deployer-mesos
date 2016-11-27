@@ -16,11 +16,13 @@
 
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
-
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.model.v2.App;
@@ -31,7 +33,6 @@ import mesosphere.marathon.client.model.v2.HealthCheck;
 import mesosphere.marathon.client.model.v2.Port;
 import mesosphere.marathon.client.model.v2.Task;
 import mesosphere.marathon.client.utils.MarathonException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -42,6 +43,7 @@ import org.springframework.cloud.deployer.spi.app.AppStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * A deployer implementation for deploying apps on Marathon, using the
@@ -118,6 +120,9 @@ public class MarathonAppDeployer implements AppDeployer {
 			env.put(INSTANCE_INDEX_PROPERTY_KEY, index.toString());
 		}
 		app.setEnv(env);
+
+		Collection<String> uris = deduceUris(request);
+		app.setUris(uris);
 
 		Double cpus = deduceCpus(request);
 		Double memory = deduceMemory(request);
@@ -285,6 +290,13 @@ public class MarathonAppDeployer implements AppDeployer {
 			groupId = appId.substring(0, index);
 		}
 		return groupId;
+	}
+
+	private Collection<String> deduceUris(AppDeploymentRequest request) {
+		Set<String> additional = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get("spring.cloud.deployer.marathon.uris"));
+		HashSet<String> result = new HashSet<>(additional);
+		result.addAll(properties.getUris());
+		return result;
 	}
 
 	private Double deduceMemory(AppDeploymentRequest request) {
