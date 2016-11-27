@@ -16,9 +16,10 @@
 
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -118,6 +119,12 @@ public class MarathonAppDeployer implements AppDeployer {
 			env.put(INSTANCE_INDEX_PROPERTY_KEY, index.toString());
 		}
 		app.setEnv(env);
+
+		Collection<String> uris = new ArrayList<>();
+		for (String uri : properties.getUris()) {
+			uris.add(uri);
+		}
+		app.setUris(uris);
 
 		Double cpus = deduceCpus(request);
 		Double memory = deduceMemory(request);
