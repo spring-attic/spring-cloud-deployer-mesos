@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.model.v2.App;
@@ -42,6 +43,7 @@ import org.springframework.cloud.deployer.spi.app.AppInstanceStatus;
 import org.springframework.cloud.deployer.spi.app.AppStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -123,6 +125,9 @@ public class MarathonAppDeployer implements AppDeployer {
 
 		Collection<String> uris = deduceUris(request);
 		app.setUris(uris);
+
+		Collection<Constraint> constraints = deduceConstraints(request);
+		app.setConstraints(constraints.stream().map(Constraint::toStringList).collect(Collectors.toList()));
 
 		Double cpus = deduceCpus(request);
 		Double memory = deduceMemory(request);
@@ -292,8 +297,16 @@ public class MarathonAppDeployer implements AppDeployer {
 		return groupId;
 	}
 
+	private Collection<Constraint> deduceConstraints(AppDeploymentRequest request) {
+		Set<Constraint> requestSpecific = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get(prefix("constraints")))
+			.stream().map(Constraint::new).collect(Collectors.toSet());
+		Set<Constraint> result = new HashSet<>(properties.getConstraints());
+		result.addAll(requestSpecific);
+		return result;
+	}
+
 	private Collection<String> deduceUris(AppDeploymentRequest request) {
-		Set<String> additional = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get("spring.cloud.deployer.mesos.marathon.uris"));
+		Set<String> additional = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get(prefix("uris")));
 		HashSet<String> result = new HashSet<>(additional);
 		result.addAll(properties.getUris());
 		return result;
@@ -352,4 +365,7 @@ public class MarathonAppDeployer implements AppDeployer {
 		return result.build();
 	}
 
+	private String prefix(String property) {
+		return MarathonAppDeployerProperties.PREFIX + "." + property;
+	}
 }

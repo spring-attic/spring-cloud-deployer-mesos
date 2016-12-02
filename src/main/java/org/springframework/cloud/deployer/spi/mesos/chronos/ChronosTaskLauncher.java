@@ -19,6 +19,7 @@ package org.springframework.cloud.deployer.spi.mesos.chronos;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +38,7 @@ import org.hashids.Hashids;
 
 import org.springframework.cloud.deployer.spi.app.AppDeployer;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
 import org.springframework.cloud.deployer.spi.task.LaunchState;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskStatus;
@@ -98,8 +101,10 @@ public class ChronosTaskLauncher implements TaskLauncher {
 		job.setContainer(container);
 		Double cpus = deduceCpus(request);
 		Double memory = deduceMemory(request);
+		Collection<Constraint> constraints = deduceConstraints(request);
 		job.setCpus(cpus);
 		job.setMem(memory);
+		job.setConstraints(constraints.stream().map(Constraint::toStringList).collect(Collectors.toList()));
 		if (StringUtils.hasText(properties.getOwnerEmail())) {
 			job.setOwner(properties.getOwnerEmail());
 		}
@@ -246,5 +251,15 @@ public class ChronosTaskLauncher implements TaskLauncher {
 		return override != null ? Double.valueOf(override) : properties.getCpu();
 	}
 
+	private Collection<Constraint> deduceConstraints(AppDeploymentRequest request) {
+		Set<Constraint> requestSpecific = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get(prefix("constraints")))
+			.stream().map(Constraint::new).collect(Collectors.toSet());
+		Set<Constraint> result = new HashSet<>(properties.getConstraints());
+		result.addAll(requestSpecific);
+		return result;
+	}
 
+	private String prefix(String property) {
+		return ChronosTaskLauncherProperties.PREFIX + "." + property;
+	}
 }
