@@ -17,9 +17,12 @@
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
 
 /**
  * Configuration properties for connecting to a Marathon installation.
@@ -54,6 +57,11 @@ public class MarathonAppDeployerProperties {
 	 * Environment variables to set for any deployed app container.
 	 */
 	private String[] environmentVariables = new String[]{};
+
+	/**
+	 * A set of constraints to apply to any deployed app, as a comma separated set of (field operator param?) triplets.
+	 */
+	private Set<Constraint> constraints = new HashSet<>();
 
 	/**
 	 * URIs to set for any deployed app container (marathon will fetch content at that address and make it available
@@ -107,5 +115,13 @@ public class MarathonAppDeployerProperties {
 
 	public void setUris(List<String> uris) {
 		this.uris = uris;
+	}
+
+	public Set<Constraint> getConstraints() {
+		return constraints;
+	}
+
+	public void setConstraints(Set<Constraint> constraints) {
+		this.constraints = constraints;
 	}
 }

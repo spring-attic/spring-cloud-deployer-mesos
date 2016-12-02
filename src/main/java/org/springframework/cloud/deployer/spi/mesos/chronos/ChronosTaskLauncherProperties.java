@@ -16,7 +16,11 @@
 
 package org.springframework.cloud.deployer.spi.mesos.chronos;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
 
 /**
  * Configuration properties for interacting with a Chronos service.
@@ -60,6 +64,11 @@ public class ChronosTaskLauncherProperties {
 	 * Name of task owner.
 	 */
 	private String ownerName;
+
+	/**
+	 * A set of constraints to apply to any deployed app, as a comma separated set of (field operator param?) triplets.
+	 */
+	private Set<Constraint> constraints = new HashSet<>(0);
 
 	public double getMemory() {
 		return memory;
@@ -115,5 +124,13 @@ public class ChronosTaskLauncherProperties {
 
 	public void setOwnerName(String ownerName) {
 		this.ownerName = ownerName;
+	}
+
+	public Set<Constraint> getConstraints() {
+		return constraints;
+	}
+
+	public void setConstraints(Set<Constraint> constraints) {
+		this.constraints = constraints;
 	}
 }
