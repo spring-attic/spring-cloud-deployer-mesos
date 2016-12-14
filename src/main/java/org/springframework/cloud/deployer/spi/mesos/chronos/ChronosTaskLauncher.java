@@ -34,6 +34,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hashids.Hashids;
 
+import org.springframework.cloud.deployer.spi.app.AppDeployer;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
 import org.springframework.cloud.deployer.spi.task.LaunchState;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
@@ -156,16 +157,17 @@ public class ChronosTaskLauncher implements TaskLauncher {
 		return status;
 	}
 
-	//@Override // For future use -- we have discussed adding this method to the TaskLauncher interface.
-	public void cleanup(String... id) {
-		Set<String> ids = new HashSet(Arrays.asList(id));
-		for (String jobName : ids) {
-			try {
-				chronos.deleteJob(jobName);
-			} catch (ChronosException e) {
-				throw new IllegalStateException(String.format("Error while deleting job '%s'", jobName), e);
-			}
+	@Override
+	public void cleanup(String id) {
+		try {
+			chronos.deleteJob(id);
+		} catch (ChronosException e) {
+			throw new IllegalStateException(String.format("Error while deleting job '%s'", id), e);
 		}
+	}
+
+	@Override
+	public void destroy(String taskName) {
 	}
 
 	protected String createDeploymentId(AppDeploymentRequest request) {
@@ -235,12 +237,12 @@ public class ChronosTaskLauncher implements TaskLauncher {
 	}
 
 	private Double deduceMemory(AppDeploymentRequest request) {
-		String override = request.getDeploymentProperties().get("spring.cloud.deployer.chronos.memory");
+		String override = request.getDeploymentProperties().get(AppDeployer.MEMORY_PROPERTY_KEY);
 		return override != null ? Double.valueOf(override) : properties.getMemory();
 	}
 
 	private Double deduceCpus(AppDeploymentRequest request) {
-		String override = request.getDeploymentProperties().get("spring.cloud.deployer.chronos.cpu");
+		String override = request.getDeploymentProperties().get(AppDeployer.CPU_PROPERTY_KEY);
 		return override != null ? Double.valueOf(override) : properties.getCpu();
 	}
 

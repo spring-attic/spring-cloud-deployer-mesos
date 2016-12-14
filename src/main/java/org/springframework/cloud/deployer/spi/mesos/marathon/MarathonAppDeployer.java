@@ -293,19 +293,19 @@ public class MarathonAppDeployer implements AppDeployer {
 	}
 
 	private Collection<String> deduceUris(AppDeploymentRequest request) {
-		Set<String> additional = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get("spring.cloud.deployer.marathon.uris"));
+		Set<String> additional = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get("spring.cloud.deployer.mesos.marathon.uris"));
 		HashSet<String> result = new HashSet<>(additional);
 		result.addAll(properties.getUris());
 		return result;
 	}
 
 	private Double deduceMemory(AppDeploymentRequest request) {
-		String override = request.getDeploymentProperties().get("spring.cloud.deployer.marathon.memory");
+		String override = request.getDeploymentProperties().get(AppDeployer.MEMORY_PROPERTY_KEY);
 		return override != null ? Double.valueOf(override) : properties.getMemory();
 	}
 
 	private Double deduceCpus(AppDeploymentRequest request) {
-		String override = request.getDeploymentProperties().get("spring.cloud.deployer.marathon.cpu");
+		String override = request.getDeploymentProperties().get(AppDeployer.CPU_PROPERTY_KEY);
 		return override != null ? Double.valueOf(override) : properties.getCpu();
 	}
 
