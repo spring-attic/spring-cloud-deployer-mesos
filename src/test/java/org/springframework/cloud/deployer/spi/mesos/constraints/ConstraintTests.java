@@ -16,17 +16,27 @@
 
 package org.springframework.cloud.deployer.spi.mesos.constraints;
 
-import org.springframework.core.convert.converter.Converter;
+import static org.junit.Assert.assertThat;
+
+import org.hamcrest.collection.IsIterableContainingInOrder;
+import org.junit.Test;
 
 /**
- * Converter from String to {@link Constraint}. Allows direct parsing when binding.
+ * Unit tests for {@link Constraint}.
  *
  * @author Eric Bottard
  */
-public class ConstraintConverter implements Converter<String, Constraint> {
+public class ConstraintTests {
 
-	@Override
-	public Constraint convert(String source) {
-		return new Constraint(source);
+	@Test(expected = IllegalArgumentException.class)
+	public void testMalformed() {
+		new Constraint("some");
 	}
+
+	@Test
+	public void testParsing() {
+		assertThat(new Constraint("some op").toStringList(), IsIterableContainingInOrder.contains("some", "op"));
+		assertThat(new Constraint("some op value").toStringList(), IsIterableContainingInOrder.contains("some", "op", "value"));
+	}
+
 }

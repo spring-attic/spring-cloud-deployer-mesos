@@ -252,12 +252,14 @@ public class ChronosTaskLauncher implements TaskLauncher {
 	}
 
 	private Collection<Constraint> deduceConstraints(AppDeploymentRequest request) {
-		Set<Constraint> requestSpecific = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get("spring.cloud.deployer.chronos.constraints"))
+		Set<Constraint> requestSpecific = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get(prefix("constraints")))
 			.stream().map(Constraint::new).collect(Collectors.toSet());
 		Set<Constraint> result = new HashSet<>(properties.getConstraints());
 		result.addAll(requestSpecific);
 		return result;
 	}
 
-
+	private String prefix(String property) {
+		return ChronosTaskLauncherProperties.PREFIX + "." + property;
+	}
 }

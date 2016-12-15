@@ -298,7 +298,7 @@ public class MarathonAppDeployer implements AppDeployer {
 	}
 
 	private Collection<Constraint> deduceConstraints(AppDeploymentRequest request) {
-		Set<Constraint> requestSpecific = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get("spring.cloud.deployer.marathon.constraints"))
+		Set<Constraint> requestSpecific = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get(prefix("constraints")))
 			.stream().map(Constraint::new).collect(Collectors.toSet());
 		Set<Constraint> result = new HashSet<>(properties.getConstraints());
 		result.addAll(requestSpecific);
@@ -306,7 +306,7 @@ public class MarathonAppDeployer implements AppDeployer {
 	}
 
 	private Collection<String> deduceUris(AppDeploymentRequest request) {
-		Set<String> additional = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get("spring.cloud.deployer.mesos.marathon.uris"));
+		Set<String> additional = StringUtils.commaDelimitedListToSet(request.getDeploymentProperties().get(prefix("uris")));
 		HashSet<String> result = new HashSet<>(additional);
 		result.addAll(properties.getUris());
 		return result;
@@ -365,4 +365,7 @@ public class MarathonAppDeployer implements AppDeployer {
 		return result.build();
 	}
 
+	private String prefix(String property) {
+		return MarathonAppDeployerProperties.PREFIX + "." + property;
+	}
 }

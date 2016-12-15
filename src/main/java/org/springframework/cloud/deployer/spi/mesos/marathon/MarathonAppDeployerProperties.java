@@ -30,8 +30,10 @@ import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
  * @author Eric Bottard
  * @author Thomas Risberg
  */
-@ConfigurationProperties("spring.cloud.deployer.mesos.marathon")
+@ConfigurationProperties(MarathonAppDeployerProperties.PREFIX)
 public class MarathonAppDeployerProperties {
+
+	/*default*/ final static String PREFIX = "spring.cloud.deployer.mesos.marathon";
 
 	/**
 	 * The location of the Marathon REST endpoint.

@@ -27,8 +27,10 @@ import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
  *
  * @author Thomas Risberg
  */
-@ConfigurationProperties("spring.cloud.deployer.mesos.chronos")
+@ConfigurationProperties(ChronosTaskLauncherProperties.PREFIX)
 public class ChronosTaskLauncherProperties {
+
+	/*default*/ static final String PREFIX = "spring.cloud.deployer.mesos.chronos";
 
 	/**
 	 * The location of the Chronos REST endpoint.
@@ -66,7 +68,7 @@ public class ChronosTaskLauncherProperties {
 	private String ownerName;
 
 	/**
-	 * A set of constraints to apply to any deployed app, as a comma separated set of (field operator param?) triplets.
+	 * A set of constraints to apply to any launched task, as a comma separated set of (field operator param?) triplets.
 	 */
 	private Set<Constraint> constraints = new HashSet<>(0);
 
