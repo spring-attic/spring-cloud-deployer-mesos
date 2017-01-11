@@ -53,6 +53,11 @@ public class ChronosTaskLauncherProperties {
 	private double cpu = 0.5D;
 
 	/**
+	 * Number of retries to attempt if a command returns a non-zero status.
+	 */
+	private Integer retries = 1;
+
+	/**
 	 * Environment variables to set for any deployed app container.
 	 */
 	private String[] environmentVariables = new String[]{};
@@ -110,6 +115,14 @@ public class ChronosTaskLauncherProperties {
 
 	public void setEnvironmentVariables(String[] environmentVariables) {
 		this.environmentVariables = environmentVariables;
+	}
+
+	public Integer getRetries() {
+		return retries;
+	}
+
+	public void setRetries(Integer retries) {
+		this.retries = retries;
 	}
 
 	public String getOwnerEmail() {

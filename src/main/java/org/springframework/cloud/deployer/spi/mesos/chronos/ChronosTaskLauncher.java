@@ -95,7 +95,7 @@ public class ChronosTaskLauncher implements TaskLauncher {
 			job.setArguments(args);
 		}
 		job.setSchedule("R1//P");
-		job.setRetries(1);
+		job.setRetries(properties.getRetries());
 		DockerContainer container = new DockerContainer();
 		container.setImage(image);
 		job.setContainer(container);
