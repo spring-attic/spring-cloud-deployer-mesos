@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-16 the original author or authors.
+ * Copyright 2015-17 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,6 +51,11 @@ public class ChronosTaskLauncherProperties {
 	 * How many CPUs to allocate per module, can be overridden at deployment time.
 	 */
 	private double cpu = 0.5D;
+
+	/**
+	 * Number of retries to attempt if a command returns a non-zero status.
+	 */
+	private Integer retries = 1;
 
 	/**
 	 * Environment variables to set for any deployed app container.
@@ -110,6 +115,14 @@ public class ChronosTaskLauncherProperties {
 
 	public void setEnvironmentVariables(String[] environmentVariables) {
 		this.environmentVariables = environmentVariables;
+	}
+
+	public Integer getRetries() {
+		return retries;
+	}
+
+	public void setRetries(Integer retries) {
+		this.retries = retries;
 	}
 
 	public String getOwnerEmail() {

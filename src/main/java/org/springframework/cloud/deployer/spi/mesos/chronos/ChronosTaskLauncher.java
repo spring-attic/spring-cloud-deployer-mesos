@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2016-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,7 +95,7 @@ public class ChronosTaskLauncher implements TaskLauncher {
 			job.setArguments(args);
 		}
 		job.setSchedule("R1//P");
-		job.setRetries(1);
+		job.setRetries(properties.getRetries());
 		DockerContainer container = new DockerContainer();
 		container.setImage(image);
 		job.setContainer(container);
