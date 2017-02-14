@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 the original author or authors.
+ * Copyright 2015-2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -197,6 +197,10 @@ public class MarathonAppDeployer implements AppDeployer {
 			try {
 				App app = marathon.getApp(id).getApp();
 				logger.debug(String.format("Deleting application: %s", app.getId()));
+				AppStatus status = status(app.getId());
+				if (status.getState().equals(DeploymentState.unknown)) {
+					throw new IllegalStateException(String.format("App '%s' is not deployed", app.getId()));
+				}
 				marathon.deleteApp(id);
 				deleteTopLevelGroupForDeployment(id);
 			} catch (MarathonException e) {
@@ -219,6 +223,10 @@ public class MarathonAppDeployer implements AppDeployer {
 		Group group = marathon.getGroup(groupId);
 		for (App app : group.getApps()) {
 			logger.debug(String.format("Deleting application %s in group %s", app.getId(), groupId));
+			AppStatus status = status(app.getId());
+			if (status.getState().equals(DeploymentState.unknown)) {
+				throw new IllegalStateException(String.format("App '%s' is not deployed", app.getId()));
+			}
 			marathon.deleteApp(app.getId());
 		}
 		group = marathon.getGroup(groupId);
