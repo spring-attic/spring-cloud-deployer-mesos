@@ -45,7 +45,7 @@ public class MesosAppDeployerIntegrationTests extends AbstractAppDeployerIntegra
 	public static MarathonTestSupport marathonAvailable = new MarathonTestSupport();
 
 	@Override
-	protected AppDeployer appDeployer() {
+	protected AppDeployer provideAppDeployer() {
 		return appDeployer;
 	}
 
