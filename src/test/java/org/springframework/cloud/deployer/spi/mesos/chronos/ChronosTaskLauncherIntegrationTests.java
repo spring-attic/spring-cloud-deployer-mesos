@@ -16,14 +16,11 @@
 
 package org.springframework.cloud.deployer.spi.mesos.chronos;
 
-import org.junit.After;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.springframework.aop.framework.Advised;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.cloud.deployer.resource.docker.DockerResource;
@@ -51,20 +48,8 @@ public class ChronosTaskLauncherIntegrationTests extends AbstractTaskLauncherInt
 	public static ChronosTestSupport chronosAvailable = new ChronosTestSupport();
 
 	@Override
-	protected TaskLauncher taskLauncher() {
+	protected TaskLauncher provideTaskLauncher() {
 		return taskLauncher;
-	}
-
-	@After
-	public void cleanUp() {
-		for (String deploymentId : deployments) {
-			try {
-				((ChronosTaskLauncher)getTargetObject(taskLauncher)).cleanup(deploymentId);
-			}
-			catch (Exception e) {
-				log.error("Error in cleanup for {}", deploymentId, e);
-			}
-		}
 	}
 
 	@Test
@@ -82,13 +67,5 @@ public class ChronosTaskLauncherIntegrationTests extends AbstractTaskLauncherInt
 	@Override
 	protected org.springframework.cloud.deployer.spi.test.Timeout deploymentTimeout() {
 		return new Timeout(30, 5000);
-	}
-
-	protected <T> T getTargetObject(Object proxy) throws Exception {
-		if (AopUtils.isJdkDynamicProxy(proxy)) {
-			return (T) ((Advised) proxy).getTargetSource().getTarget();
-		} else {
-			return (T) proxy;
-		}
 	}
 }
