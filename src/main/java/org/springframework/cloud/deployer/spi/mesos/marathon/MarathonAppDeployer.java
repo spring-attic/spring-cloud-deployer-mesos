@@ -198,12 +198,12 @@ public class MarathonAppDeployer implements AppDeployer {
 		else {
 			logger.info(String.format("Undeploying application deployment: %s", id));
 			try {
+				AppStatus status = status(id);
+				if (status.getState().equals(DeploymentState.unknown)) {
+					throw new IllegalStateException(String.format("App '%s' is not in a deployed state", id));
+				}
 				App app = marathon.getApp(id).getApp();
 				logger.debug(String.format("Deleting application: %s", app.getId()));
-				AppStatus status = status(app.getId());
-				if (status.getState().equals(DeploymentState.unknown)) {
-					throw new IllegalStateException(String.format("App '%s' is not deployed", app.getId()));
-				}
 				marathon.deleteApp(id);
 				deleteTopLevelGroupForDeployment(id);
 			} catch (MarathonException e) {
@@ -226,10 +226,6 @@ public class MarathonAppDeployer implements AppDeployer {
 		Group group = marathon.getGroup(groupId);
 		for (App app : group.getApps()) {
 			logger.debug(String.format("Deleting application %s in group %s", app.getId(), groupId));
-			AppStatus status = status(app.getId());
-			if (status.getState().equals(DeploymentState.unknown)) {
-				throw new IllegalStateException(String.format("App '%s' is not deployed", app.getId()));
-			}
 			marathon.deleteApp(app.getId());
 		}
 		group = marathon.getGroup(groupId);
