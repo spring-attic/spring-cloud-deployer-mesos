@@ -38,10 +38,12 @@ import org.hashids.Hashids;
 
 import org.springframework.cloud.deployer.spi.app.AppDeployer;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
 import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
 import org.springframework.cloud.deployer.spi.task.LaunchState;
 import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.task.TaskStatus;
+import org.springframework.cloud.deployer.spi.util.RuntimeVersionUtils;
 import org.springframework.cloud.mesos.chronos.client.Chronos;
 import org.springframework.cloud.mesos.chronos.client.ChronosException;
 import org.springframework.cloud.mesos.chronos.client.model.DockerContainer;
@@ -174,6 +176,22 @@ public class ChronosTaskLauncher implements TaskLauncher {
 	@Override
 	public void destroy(String taskName) {
 	}
+
+	@Override
+	public RuntimeEnvironmentInfo environmentInfo() {
+		String apiVersion = "v1";
+		String hostVersion = "unknown";
+		return new RuntimeEnvironmentInfo.Builder()
+				.spiClass(AppDeployer.class)
+				.implementationName(this.getClass().getSimpleName())
+				.implementationVersion(RuntimeVersionUtils.getVersion(this.getClass()))
+				.platformType("Mesos")
+				.platformApiVersion(apiVersion)
+				.platformClientVersion(RuntimeVersionUtils.getVersion(chronos.getClass()))
+				.platformHostVersion(hostVersion)
+				.build();
+	}
+
 
 	protected String createDeploymentId(AppDeploymentRequest request) {
 		String name = request.getDefinition().getName();

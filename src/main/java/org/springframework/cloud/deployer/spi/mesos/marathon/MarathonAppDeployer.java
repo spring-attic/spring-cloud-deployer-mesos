@@ -29,6 +29,7 @@ import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.model.v2.App;
 import mesosphere.marathon.client.model.v2.Container;
 import mesosphere.marathon.client.model.v2.Docker;
+import mesosphere.marathon.client.model.v2.GetServerInfoResponse;
 import mesosphere.marathon.client.model.v2.Group;
 import mesosphere.marathon.client.model.v2.HealthCheck;
 import mesosphere.marathon.client.model.v2.Port;
@@ -43,7 +44,9 @@ import org.springframework.cloud.deployer.spi.app.AppInstanceStatus;
 import org.springframework.cloud.deployer.spi.app.AppStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
 import org.springframework.cloud.deployer.spi.core.AppDeploymentRequest;
+import org.springframework.cloud.deployer.spi.core.RuntimeEnvironmentInfo;
 import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
+import org.springframework.cloud.deployer.spi.util.RuntimeVersionUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -283,6 +286,31 @@ public class MarathonAppDeployer implements AppDeployer {
 		}
 		logger.debug(String.format("Status for app: %s is %s", id, status));
 		return status;
+	}
+
+	@Override
+	public RuntimeEnvironmentInfo environmentInfo() {
+		String apiVersion = "v1";
+		String hostVersion = "unknown";
+		String frameworkId = "unknown";
+		String leader = "unknown";
+		try {
+			GetServerInfoResponse serverInfo = marathon.getServerInfo();
+			hostVersion = serverInfo.getVersion();
+			frameworkId = serverInfo.getFrameworkId();
+			leader = serverInfo.getLeader();
+		} catch (MarathonException ignore) {}
+		return new RuntimeEnvironmentInfo.Builder()
+				.spiClass(AppDeployer.class)
+				.implementationName(this.getClass().getSimpleName())
+				.implementationVersion(RuntimeVersionUtils.getVersion(this.getClass()))
+				.platformType("Mesos")
+				.platformApiVersion(apiVersion)
+				.platformClientVersion(RuntimeVersionUtils.getVersion(marathon.getClass()))
+				.platformHostVersion(hostVersion)
+				.addPlatformSpecificInfo("leader", leader)
+				.addPlatformSpecificInfo("frameworkId", frameworkId)
+				.build();
 	}
 
 	private String deduceAppId(AppDeploymentRequest request) {
