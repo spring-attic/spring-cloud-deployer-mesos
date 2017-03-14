@@ -32,26 +32,26 @@ import feign.RequestLine;
  */
 public interface Chronos {
 
-	@RequestLine("GET /scheduler/jobs")
+	@RequestLine("GET /v1/scheduler/jobs")
 	List<Job> getJobs() throws ChronosException;
 
-	@RequestLine("GET /scheduler/graph/csv")
+	@RequestLine("GET /v1/scheduler/graph/csv")
 	@Headers("Accept: text/plain")
 	String getGraphCsv() throws ChronosException;
 
-	@RequestLine("POST /scheduler/iso8601")
+	@RequestLine("POST /v1/scheduler/iso8601")
 	void createJob(Job job) throws ChronosException;
 
-	@RequestLine("POST /scheduler/iso8601")
+	@RequestLine("POST /v1/scheduler/iso8601")
 	void createDockerJob(DockerJob job) throws ChronosException;
 
-	@RequestLine("PUT /scheduler/job/{jobName}")
+	@RequestLine("PUT /v1/scheduler/job/{jobName}")
 	void startJob(@Param("jobName") String jobName) throws ChronosException;
 
-	@RequestLine("DELETE /scheduler/job/{jobName}")
+	@RequestLine("DELETE /v1/scheduler/job/{jobName}")
 	void deleteJob(@Param("jobName") String jobName) throws ChronosException;
 
-	@RequestLine("DELETE /scheduler/task/kill/{jobName}")
+	@RequestLine("DELETE /v1/scheduler/task/kill/{jobName}")
 	void deleteJobTasks(@Param("jobName") String jobName) throws ChronosException;
 
 }

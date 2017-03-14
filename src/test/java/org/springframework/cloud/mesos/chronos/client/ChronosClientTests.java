@@ -30,7 +30,7 @@ public class ChronosClientTests {
 
 	@Test
 	public void testClientGetJobs() throws ChronosException {
-		stubFor(get(urlEqualTo("/scheduler/jobs"))
+		stubFor(get(urlEqualTo("/v1/scheduler/jobs"))
 				.willReturn(aResponse()
 						.withHeader("Content-Type", "application/json")
 						.withBody("[{\"name\":\"test1\",\"command\":\"pwd\",\"description\":\"My test job\"}," +
@@ -44,7 +44,7 @@ public class ChronosClientTests {
 
 	@Test
 	public void testClientAddJob() throws ChronosException {
-		stubFor(post(urlEqualTo("/scheduler/iso8601")).willReturn(aResponse()));
+		stubFor(post(urlEqualTo("/v1/scheduler/iso8601")).willReturn(aResponse()));
 		Job job = new Job();
 		job.setName("test");
 		job.setOwner("test@example.com");
@@ -55,7 +55,7 @@ public class ChronosClientTests {
 
 	@Test
 	public void testClientAddDockerJob() throws ChronosException {
-		stubFor(post(urlEqualTo("/scheduler/iso8601")).willReturn(aResponse()));
+		stubFor(post(urlEqualTo("/v1/scheduler/iso8601")).willReturn(aResponse()));
 		DockerJob job = new DockerJob();
 		job.setName("test");
 		job.setOwner("test@example.com");
@@ -69,19 +69,19 @@ public class ChronosClientTests {
 
 	@Test
 	public void testClientStartJob() throws ChronosException {
-		stubFor(put(urlEqualTo("/scheduler/job/test")).willReturn(aResponse()));
+		stubFor(put(urlEqualTo("/v1/scheduler/job/test")).willReturn(aResponse()));
 		client.startJob("test");
 	}
 
 	@Test
 	public void testClientDeleteJob() throws ChronosException {
-		stubFor(delete(urlEqualTo("/scheduler/job/test")).willReturn(aResponse()));
+		stubFor(delete(urlEqualTo("/v1/scheduler/job/test")).willReturn(aResponse()));
 		client.deleteJob("test");
 	}
 
 	@Test
 	public void testClientDeleteJobTasks() throws ChronosException {
-		stubFor(delete(urlEqualTo("/scheduler/task/kill/test")).willReturn(aResponse()));
+		stubFor(delete(urlEqualTo("/v1/scheduler/task/kill/test")).willReturn(aResponse()));
 		client.deleteJobTasks("test");
 	}
 
