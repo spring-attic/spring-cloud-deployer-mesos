@@ -68,7 +68,6 @@ public class MesosAutoConfiguration {
 
 	@Bean
 	@RefreshScope
-	@ConditionalOnMissingBean(AppDeployer.class)
 	public AppDeployer appDeployer(MarathonAppDeployerProperties marathonProperties, Marathon marathon) {
 		return new MarathonAppDeployer(marathonProperties, marathon);
 	}
@@ -87,7 +86,6 @@ public class MesosAutoConfiguration {
 
 	@Bean
 	@RefreshScope
-	@ConditionalOnMissingBean(TaskLauncher.class)
 	public TaskLauncher taskDeployer(ChronosTaskLauncherProperties chronosProperties, Chronos chronos) {
 		return new ChronosTaskLauncher(chronosProperties, chronos);
 	}
