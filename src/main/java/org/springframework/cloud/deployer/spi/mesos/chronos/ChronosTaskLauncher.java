@@ -71,6 +71,68 @@ public class ChronosTaskLauncher implements TaskLauncher {
 
 	@Override
 	public String launch(AppDeploymentRequest request) {
+
+		if(request.getResource() instanceof DockerJob) {
+			return launchDockerJob(request);
+		} else {
+			return launchJob(request);
+		}
+	}
+
+	private String launchJob(AppDeploymentRequest request) {
+		String jobName = createDeploymentId(request);
+		Job job = new Job();
+
+		try {
+			job.setCommand(request.getResource().getURI().getSchemeSpecificPart());
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Unable to get URI for " + request.getResource(), e);
+		}
+
+		job.setName(jobName);
+		List<Map<String, String>> envVars = new ArrayList<>();
+		Map<String, String> springApplicationJson = createSpringApplicationJson(request);
+		if (springApplicationJson.size() > 0) {
+			envVars.add(springApplicationJson);
+		}
+		logger.info("Using env: " + envVars);
+		if (envVars.size() > 0) {
+			job.setEnvironmentVariables(envVars);
+		}
+		job.setShell(true);
+
+		List<String> args = createCommandArgs(request);
+		if (args.size() > 0) {
+			job.setArguments(args);
+		}
+		job.setSchedule("R1//PT10M");
+		job.setRetries(0);
+		Double cpus =   deduceCpus(request);
+		Double memory = deduceMemory(request);
+		job.setCpus(cpus);
+		job.setMem(memory);
+		if (StringUtils.hasText(properties.getOwnerEmail())) {
+			job.setOwner(properties.getOwnerEmail());
+		}
+		if (StringUtils.hasText(properties.getOwnerName())) {
+			job.setOwnerName(properties.getOwnerName());
+		}
+		if (properties.getUris() != null && properties.getUris().length > 0) {
+			job.setUris(Arrays.asList(properties.getUris()));
+		}
+		try {
+			if (logger.isDebugEnabled()) {
+				logger.debug("Launching Job with definition:\n" + job.toString());
+			}
+			chronos.createJob(job);
+		} catch (ChronosException e) {
+			logger.error(e.getMessage(), e);
+			throw new IllegalStateException(String.format("Error while creating job '%s'", jobName), e);
+		}
+		return jobName;
+	}
+
+	private String launchDockerJob(AppDeploymentRequest request) {
 		String jobName = createDeploymentId(request);
 		String image = null;
 		try {
