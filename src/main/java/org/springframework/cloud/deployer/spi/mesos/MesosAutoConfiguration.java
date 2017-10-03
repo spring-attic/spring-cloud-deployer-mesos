@@ -20,6 +20,7 @@ import mesosphere.marathon.client.Marathon;
 import mesosphere.marathon.client.MarathonClient;
 
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.ConfigurationPropertiesBinding;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -44,6 +45,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Florian Rosenberg
  * @author Thomas Risberg
+ * @author Ali Shahbour
  */
 @Configuration
 @EnableConfigurationProperties({
@@ -55,6 +57,7 @@ public class MesosAutoConfiguration {
 
 	@Bean
 	@RefreshScope
+	@ConditionalOnMissingBean(Marathon.class)
 	public Marathon marathon(MarathonAppDeployerProperties marathonProperties, DcosClusterProperties dcosClusterProperties) {
 		if (StringUtils.hasText(dcosClusterProperties.getAuthorizationToken())) {
 			return MarathonClient.getInstance(marathonProperties.getApiEndpoint(),
@@ -67,12 +70,14 @@ public class MesosAutoConfiguration {
 
 	@Bean
 	@RefreshScope
+	@ConditionalOnMissingBean(AppDeployer.class)
 	public AppDeployer appDeployer(MarathonAppDeployerProperties marathonProperties, Marathon marathon) {
 		return new MarathonAppDeployer(marathonProperties, marathon);
 	}
 
 	@Bean
 	@RefreshScope
+	@ConditionalOnMissingBean(Chronos.class)
 	public Chronos chronos(ChronosTaskLauncherProperties chronosProperties, DcosClusterProperties dcosClusterProperties) {
 		if (StringUtils.hasText(dcosClusterProperties.getAuthorizationToken())) {
 			return ChronosClient.getInstance(chronosProperties.getApiEndpoint(),
@@ -85,12 +90,14 @@ public class MesosAutoConfiguration {
 
 	@Bean
 	@RefreshScope
+	@ConditionalOnMissingBean(TaskLauncher.class)
 	public TaskLauncher taskDeployer(ChronosTaskLauncherProperties chronosProperties, Chronos chronos) {
 		return new ChronosTaskLauncher(chronosProperties, chronos);
 	}
 
 	@Bean
 	@ConfigurationPropertiesBinding
+	@ConditionalOnMissingBean(ConstraintConverter.class)
 	public ConstraintConverter constraintConverter() {
 		return new ConstraintConverter();
 	}
