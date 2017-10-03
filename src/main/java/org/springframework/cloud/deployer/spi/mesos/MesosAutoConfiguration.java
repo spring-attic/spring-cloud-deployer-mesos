@@ -45,6 +45,7 @@ import org.springframework.util.StringUtils;
  *
  * @author Florian Rosenberg
  * @author Thomas Risberg
+ * @author Ali Shahbour
  */
 @Configuration
 @EnableConfigurationProperties({
@@ -56,6 +57,7 @@ public class MesosAutoConfiguration {
 
 	@Bean
 	@RefreshScope
+	@ConditionalOnMissingBean(Marathon.class)
 	public Marathon marathon(MarathonAppDeployerProperties marathonProperties, DcosClusterProperties dcosClusterProperties) {
 		if (StringUtils.hasText(dcosClusterProperties.getAuthorizationToken())) {
 			return MarathonClient.getInstance(marathonProperties.getApiEndpoint(),
@@ -75,6 +77,7 @@ public class MesosAutoConfiguration {
 
 	@Bean
 	@RefreshScope
+	@ConditionalOnMissingBean(Chronos.class)
 	public Chronos chronos(ChronosTaskLauncherProperties chronosProperties, DcosClusterProperties dcosClusterProperties) {
 		if (StringUtils.hasText(dcosClusterProperties.getAuthorizationToken())) {
 			return ChronosClient.getInstance(chronosProperties.getApiEndpoint(),
@@ -94,6 +97,7 @@ public class MesosAutoConfiguration {
 
 	@Bean
 	@ConfigurationPropertiesBinding
+	@ConditionalOnMissingBean(ConstraintConverter.class)
 	public ConstraintConverter constraintConverter() {
 		return new ConstraintConverter();
 	}
