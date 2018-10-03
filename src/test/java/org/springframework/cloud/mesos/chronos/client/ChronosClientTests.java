@@ -3,6 +3,7 @@ package org.springframework.cloud.mesos.chronos.client;
 import org.junit.Rule;
 import org.junit.Test;
 
+import org.springframework.cloud.contract.wiremock.WireMockSpring;
 import org.springframework.cloud.mesos.chronos.client.model.DockerContainer;
 import org.springframework.cloud.mesos.chronos.client.model.Job;
 import org.springframework.cloud.mesos.chronos.client.model.DockerJob;
@@ -24,9 +25,9 @@ import java.util.List;
 public class ChronosClientTests {
 
 	@Rule
-	public WireMockRule wireMockRule = new WireMockRule();
+	public WireMockRule wireMockRule = new WireMockRule(WireMockSpring.options());
 
-	Chronos client = ChronosClient.getInstance("http://localhost:8080");
+	private Chronos client = ChronosClient.getInstance("http://localhost:8080");
 
 	@Test
 	public void testClientGetJobs() throws ChronosException {

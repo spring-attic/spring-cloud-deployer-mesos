@@ -16,8 +16,8 @@
 
 package org.springframework.cloud.deployer.spi.mesos.chronos;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.deployer.spi.mesos.dcos.DcosClusterProperties;
 import org.springframework.cloud.deployer.spi.test.junit.AbstractExternalResourceTestSupport;
@@ -38,19 +38,19 @@ public class ChronosTestSupport extends AbstractExternalResourceTestSupport<Chro
 
 	private ConfigurableApplicationContext context;
 
-	protected ChronosTestSupport() {
+	ChronosTestSupport() {
 		super("CHRONOS");
 	}
 
 
 	@Override
-	protected void cleanupResource() throws Exception {
+	protected void cleanupResource() {
 		context.close();
 	}
 
 	@Override
 	protected void obtainResource() throws Exception {
-		context = SpringApplication.run(Config.class);
+		context = new SpringApplicationBuilder(Config.class).web(false).run();
 		resource = context.getBean(Chronos.class);
 		resource.getGraphCsv();
 	}
