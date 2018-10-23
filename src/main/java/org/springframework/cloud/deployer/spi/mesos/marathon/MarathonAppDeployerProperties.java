@@ -29,6 +29,7 @@ import org.springframework.cloud.deployer.spi.mesos.constraints.Constraint;
  *
  * @author Eric Bottard
  * @author Thomas Risberg
+ * @author Adam J. Weigold
  */
 @ConfigurationProperties(MarathonAppDeployerProperties.PREFIX)
 public class MarathonAppDeployerProperties {
@@ -70,6 +71,17 @@ public class MarathonAppDeployerProperties {
 	 * to the container).
 	 */
 	private List<String> uris = new ArrayList<>(0);
+
+    /**
+     * Whether group deletions should be forced (marathon will not delete the group if there is an ongoing deployment
+     * within the group if this is set to false).
+     */
+	private boolean forceGroupDeletion = true;
+
+    /**
+     * Forces all deployed apps to reside underneath a single global group.
+     */
+	private String globalMarathonGroup;
 
 	public double getMemory() {
 		return memory;
@@ -126,4 +138,20 @@ public class MarathonAppDeployerProperties {
 	public void setConstraints(Set<Constraint> constraints) {
 		this.constraints = constraints;
 	}
+
+    public boolean isForceGroupDeletion() {
+        return forceGroupDeletion;
+    }
+
+    public void setForceGroupDeletion(boolean forceGroupDeletion) {
+        this.forceGroupDeletion = forceGroupDeletion;
+    }
+
+    public String getGlobalMarathonGroup() {
+        return globalMarathonGroup;
+    }
+
+    public void setGlobalMarathonGroup(String globalMarathonGroup) {
+        this.globalMarathonGroup = globalMarathonGroup;
+    }
 }

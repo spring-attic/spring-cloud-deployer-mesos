@@ -19,10 +19,9 @@ package org.springframework.cloud.deployer.spi.mesos.chronos;
 import org.junit.ClassRule;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.deployer.resource.docker.DockerResource;
 import org.springframework.cloud.deployer.spi.mesos.MesosAutoConfiguration;
 import org.springframework.cloud.deployer.spi.mesos.TestConfig;
@@ -30,15 +29,13 @@ import org.springframework.cloud.deployer.spi.task.TaskLauncher;
 import org.springframework.cloud.deployer.spi.test.AbstractTaskLauncherIntegrationTests;
 import org.springframework.cloud.deployer.spi.test.Timeout;
 import org.springframework.core.io.Resource;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
  * Integration tests for {@link ChronosTaskLauncher}.
  *
  * @author Thomas Risberg
  */
-@SpringApplicationConfiguration(classes = {TestConfig.class, MesosAutoConfiguration.class})
-@RunWith(SpringJUnit4ClassRunner.class)
+@SpringBootTest(classes = {TestConfig.class, MesosAutoConfiguration.class})
 public class ChronosTaskLauncherIntegrationTests extends AbstractTaskLauncherIntegrationTests{
 
 	@Autowired

@@ -23,10 +23,11 @@ import java.util.Random;
 
 import org.springframework.cloud.deployer.spi.app.AppInstanceStatus;
 import org.springframework.cloud.deployer.spi.app.DeploymentState;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import mesosphere.marathon.client.model.v2.App;
-import mesosphere.marathon.client.model.v2.HealthCheckResult;
+import mesosphere.marathon.client.model.v2.HealthCheckResults;
 import mesosphere.marathon.client.model.v2.Task;
 
 /**
@@ -78,12 +79,13 @@ public class MarathonAppInstanceStatus implements AppInstanceStatus {
 			}
 		}
 		else {
-			if (app.getInstances().intValue() > app.getTasksRunning().intValue()) {
+			if (app.getInstances() > app.getTasksRunning()) {
 				return DeploymentState.deploying;
 			}
 			else {
-				Collection<HealthCheckResult> healthCheckResults = task.getHealthCheckResults();
-				boolean alive = healthCheckResults != null && healthCheckResults.iterator().next().isAlive();
+				Collection<HealthCheckResults> healthCheckResults = task.getHealthCheckResults();
+				boolean alive = !CollectionUtils.isEmpty(healthCheckResults) &&
+						healthCheckResults.iterator().next().getAlive();
 				if (!alive && app.getLastTaskFailure() != null) {
 					return DeploymentState.failed;
 				}

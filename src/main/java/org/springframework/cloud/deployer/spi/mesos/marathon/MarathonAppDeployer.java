@@ -17,8 +17,8 @@
 package org.springframework.cloud.deployer.spi.mesos.marathon;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -34,7 +34,7 @@ import mesosphere.marathon.client.model.v2.Group;
 import mesosphere.marathon.client.model.v2.HealthCheck;
 import mesosphere.marathon.client.model.v2.Port;
 import mesosphere.marathon.client.model.v2.Task;
-import mesosphere.marathon.client.utils.MarathonException;
+import mesosphere.marathon.client.MarathonException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -62,9 +62,9 @@ public class MarathonAppDeployer implements AppDeployer {
 
 	private static final Log logger = LogFactory.getLog(MarathonAppDeployer.class);
 
-	private MarathonAppDeployerProperties properties = new MarathonAppDeployerProperties();
+	private MarathonAppDeployerProperties properties;
 
-	Marathon marathon;
+	private Marathon marathon;
 
 	@Autowired
 	public MarathonAppDeployer(MarathonAppDeployerProperties properties,
@@ -93,7 +93,7 @@ public class MarathonAppDeployer implements AppDeployer {
 			int count = (countProperty != null) ? Integer.parseInt(countProperty) : 1;
 			for (int i = 0; i < count; i++) {
 				String instanceId = appId + "/" + request.getDefinition().getName() + "-" + i;
-				createAppDeployment(request, instanceId, container, Integer.valueOf(i));
+				createAppDeployment(request, instanceId, container, i);
 			}
 		}
 		else {
@@ -114,8 +114,7 @@ public class MarathonAppDeployer implements AppDeployer {
 		app.setContainer(container);
 		app.setId(deploymentId);
 
-		Map<String, String> env = new HashMap<>();
-		env.putAll(request.getDefinition().getProperties());
+		Map<String, Object> env = new HashMap<>(request.getDefinition().getProperties());
 		for (String envVar : properties.getEnvironmentVariables()) {
 			String[] strings = envVar.split("=", 2);
 			Assert.isTrue(strings.length == 2, "Invalid environment variable declared: " + envVar);
@@ -141,9 +140,9 @@ public class MarathonAppDeployer implements AppDeployer {
 		app.setInstances(instances);
 
 		HealthCheck healthCheck = new HealthCheck();
-		healthCheck.setPath("/health");
+		healthCheck.setPath("/actuator/health");
 		healthCheck.setGracePeriodSeconds(300);
-		app.setHealthChecks(Arrays.asList(healthCheck));
+		app.setHealthChecks(Collections.singletonList(healthCheck));
 
 		logger.debug("Creating app with definition:\n" + app.toString());
 		try {
@@ -157,7 +156,7 @@ public class MarathonAppDeployer implements AppDeployer {
 	private Container createContainer(AppDeploymentRequest request) {
 		Container container = new Container();
 		Docker docker = new Docker();
-		String image = null;
+		String image;
 		try {
 			image = request.getResource().getURI().getSchemeSpecificPart();
 		} catch (IOException e) {
@@ -165,9 +164,10 @@ public class MarathonAppDeployer implements AppDeployer {
 		}
 		logger.info("Using Docker image: " + image);
 		docker.setImage(image);
-		Port port = new Port(8080);
+		Port port = new Port();
+		port.setContainerPort(8080);
 		port.setHostPort(0);
-		docker.setPortMappings(Arrays.asList(port));
+		docker.setPortMappings(Collections.singletonList(port));
 		docker.setNetwork("BRIDGE");
 		container.setDocker(docker);
 		return container;
@@ -235,7 +235,7 @@ public class MarathonAppDeployer implements AppDeployer {
 		}
 		if (group.getApps().size() == 0 && group.getGroups().size() == 0) {
 			logger.info(String.format("Deleting group: %s", groupId));
-			marathon.deleteGroup(groupId);
+			marathon.deleteGroup(groupId, properties.isForceGroupDeletion());
 		}
 		deleteTopLevelGroupForDeployment(groupId);
 	}
@@ -250,7 +250,7 @@ public class MarathonAppDeployer implements AppDeployer {
 			}
 			if (topGroup.getApps().size() == 0 && topGroup.getGroups().size() == 0) {
 				logger.info(String.format("Deleting group: %s", topLevelGroupId));
-				marathon.deleteGroup(topLevelGroupId);
+				marathon.deleteGroup(topLevelGroupId, properties.isForceGroupDeletion());
 			}
 		}
 	}
@@ -312,11 +312,16 @@ public class MarathonAppDeployer implements AppDeployer {
 	private String deduceAppId(AppDeploymentRequest request) {
 		String groupId = request.getDeploymentProperties().get(GROUP_PROPERTY_KEY);
 		String name = request.getDefinition().getName();
+		String globalMarathonGroup = properties.getGlobalMarathonGroup();
+		String prefix = "/";
+		if (StringUtils.hasText(globalMarathonGroup)) {
+			prefix = "/" + globalMarathonGroup + "/";
+		}
 		if (groupId != null) {
-			return "/" + groupId + "/" + name;
+			return prefix + groupId + "/" + name;
 		}
 		else {
-			return "/" + name;
+			return prefix + name;
 		}
 	}
 
