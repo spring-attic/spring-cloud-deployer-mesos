@@ -14,7 +14,7 @@ Version 3 of Chronos is required.  Testing has been done against v3.0.1.
 
 ## Building
 
-Build the project without running tests using:
+Build the project using:
 
 ```
 ./mvnw clean install
