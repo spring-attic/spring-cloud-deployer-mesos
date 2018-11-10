@@ -19,7 +19,7 @@ package org.springframework.cloud.mesos.chronos.client;
 /**
  * Chronos Exception
  *
- * Based on similar exception class for Marathon - {@link mesosphere.marathon.client.utils.MarathonException}
+ * Based on similar exception class for Marathon - {@link mesosphere.marathon.client.MarathonException}
  *
  * @author Thomas Risberg
  */
