@@ -1,0 +1,32 @@
+sudo: false
+cache:
+  directories:
+  - $HOME/.m2
+language: java
+jdk:
+- oraclejdk8
+env:
+  global:
+    # CODECOV_TOKEN
+    - secure: "RgpDAnWySnYUXyHHneDKK7/1j7pn/T7+4yNwRv5udalHrodskEUl2HbuylD21YYtZ7MZ/Z/pQ74EwhXOC/ZwTvcKb0Uq8POC7hOiJiqt/GIf27Vg7azgVSkjirDZ35k/vYLPPeZr5FdsFaO6V9T9+G9g5mpbLYY+Ggu0x6G5ahmCL/t0Bt/ZKlWsHHuZzJvdvtkLi5JAPw6NN8AvP2rNECF4Si5nKwln0/kRXuMOvhiMobSEdhlRww3aH6zmqtlU9NMRm5JV4xwfEphN0qrWWpAyALdANpnTH23tsR9bwvaZet7Ii/ydyHjFj2QRuiOErKyq8VlG/G+u7yJ+t9IMBWvFEyt0rpNyCBP4aGDPxNlII/QkHBug2rUhtOP0jpumbLgzYymOJMTei7oUHZiE/s5M/vPf7Bb10HUoXcrADuja4VESZ+jWUGFdg9wGXwfdQTTXEO/rN6NYgYjSrsIdVWBboADKtr/XePfPD8NZgnFICau3Yd1o2sRJhOpqm+eCVeXPZOQ/zyxmRi17wHO1IJLnDWexknWaPTBqw1bPGLWUAJNvL0l9nXwgJVGlcnVlbp0vDj/bN/MhyiEGwYZDQbP0gkTpA8SzxntNlwhojVpqN1/z8aZy8FyHMwOtNQe+zbwVLIzDzBxpbbrjbDnWlRfe/cRf4zEuPpOiEpsGzAk="
+    # GITHUB_ACCESS_TOKEN
+    - secure: "VdwNG0J/TvaaHxhdyJf3TKLHvUzOH63kOedWpHaT74SwQtulxKhvXcejBxv9rIdG4jGquR9WVN2uju/5kkeGdoNt842BU9nGYEz9PyCqeldDvj2E3ClFPnKNd0kfHROOHeBiCzkwaZ2IoA1pjvrEF0Ke6yXHPPQqqXBtB7+k2ii8JY4oCWbnI23VBM6UTsr4jTmJkMELadY9mwurJ2HHGwJ4kSepw1leKmr5XGhb3vwPXuoehO5C0QtPTCSF9kcD/K+donZzWiNABDOWDNysWgwG7zDlThhaUShkCcR+yPIvN6vUs7O48HFFJFs2VvrhzGVBeMDk7ByyI/jAPPW7VO3cTu99c6JVcKRmbUnQ85XXDEZPRrMWrrS7NfIaNB9tCkpNyL/ajVH0xlJ5Bvc4q53JEokDaOdnSGbiwAGiQOie5C1/kNBfXHqfP3VdsLZOz4I4bHGFuF/6Sb5vs9KjLMoJ4Zr1pM2yIOFhiI/Z0gKI0dpxCw0aAdPoj+MCghmeRNwp22Rl6BXTGs7fG1pnvoUbcanjl1wRWqE/EsDOiPM0aF3G59QqwGj98jsE622ljeZqfmE+Bdh9nMjsq/P3pcxP1HA/hq3CzqOQlmF/j/OSoxyKFrxq+A/udquetHWgRhSVlQfUOpC4qcn62yTnGCZLbJZ3dHMG17SH0IQHQ4A="
+    # GITHUB_USERNAME
+    - secure: "GCIgHicDyE0l+kdauU1TJWJlFK3uDcD90DdwDeR1sh2R6RlX8A+KcETAAkiuEGW1/lYS0H79rjr1WB1opXs0quAvQ+y03eLSv50QRdmzEBUS5WDyaViok+aHbxR7kGYOOzgqW2ldyxYZzEQ/jrJ4OasVje2VGTiFr4TuauwOEHKGyWiAJxqy0h9F2fuZ78gKCd6pYwHmpIOT9FJ1BnOQrUQm7+XluOx3x3SoH1TZyh/09Hv6U2ryxYAWqfMYWfgA0UAPX9ZGINA7/XT60aTWVuzsJWzshDj6QosHuaFndJ80+X4e+fgd7m27W5XQsXY7CxmRCVM7zpzG9YNBzfAjp5n1FsbkddmsRgXxn6VfnG8AZIldqfQK+JNRrQPMLi+JGZaNApkDyZHUKxaIPvUFpYHzdB/TT86ci67f9BbV3jYImWH9SJIJZsnQ4Q/d1xjqdyBtV0XUfT1BNemmM1kRkk4MUYIiYp3zCu8K6IiNCZX5VfmNVOK/xS6+4LAkNor+QHHstRcjbWzUPLaQ1TqW0yA9DrZNI1R9FRQBbv/hFVBEawWGB39dWFba46G2cDVzyfbGoRBkQD5N7+Z2WAeJrS3bbmcMKPZysmPaomXZtNlP3BN+9iHCCnBIkgbAMvmHkEoZiIjD3jitbE7zNrL6G6tW8nPkZZ6uSd3J0nA1L5c="
+    # BINTRAY_PASSWORD
+    - secure: "P4ER7gXAN+KRPwlkZjpCyE0lydoJJpOk4SomXQT8MajX1sAc5kaHtPLrEXwhvjrivvk7nXwHIyHblF8DiH68tR8lHKxbYvacy37yQ+IKN9YQd355lXiZWZLKLIg7yATwCwpN1Ajp9lAQRa61aloMOrIFlN+2tsY4CaiZpeO9kgUnO0fu1AOUJk0KMXtCgn30TpZzNMi/c1oejf4F+U1NFY7lg7pdxgs/vN7W6KI3+OcsWUkmoToNM+OK+Q63UgJr7zA/o3dKPR9/87xebAdFdaXBrJQLZZ643MsJuoAT5Cu3JWlm6moHaPt3w9aKEI0aDmwviReUL8tGOSJGhDGhEj1SOkMQpnoWfSfWEo5l9tdSJSpt88PHJOEBr7V1M/YpUyvfHDjKMNLC2KGWCVVWK6l9QpthKQbp8dOjdB4Z7wa4T/zSsKqfYaY7Fu43Gf1D3o9Ku6sPEvumVq87QSfj40yM5UUNzbrgCsoAqcRWN0W1WvCWUwS53A+hPbhAePMFOwsWp/uvGd0oG/gJGvUmQM6CmAlYkCetNxKJtx7LSilOovYhPYVqcfb1qFdcYzjfbx7sEyPoW0TemsHK8Oi+cT5TlmphlJEx7BsIfOBYYCmQpuRXrjVZcmpR/KJdzq0ENIoDuiT4dqNTjLx5gqW0j/e9afJN4j7e6k+SIsnVm10="
+
+install: true
+script:
+  - ./mvnw --batch-mode clean install cobertura:cobertura -Dlogging.level.=ERROR
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+deploy:
+  provider: script
+  script: chmod +x .travis/release.sh && .travis/release.sh
+  skip_cleanup: true
+  on:
+    jdk: oraclejdk8
+    tags: true
