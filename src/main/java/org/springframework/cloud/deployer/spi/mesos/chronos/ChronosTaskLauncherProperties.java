@@ -35,7 +35,7 @@ public class ChronosTaskLauncherProperties {
 	/**
 	 * The location of the Chronos REST endpoint.
 	 */
-	private String apiEndpoint = "http://m1.dcos/service/chronos";
+	private String apiEndpoint = "https://m1.dcos/service/chronos";
 
 	/**
 	 * URIs for artifacts to be downloaded when the task is started.
