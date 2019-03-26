@@ -30,7 +30,7 @@ public class MarathonAppDeployerProperties {
 	/**
 	 * The location of the Marathon REST endpoint.
 	 */
-	private String apiEndpoint = "http://m1.dcos/service/marathon";
+	private String apiEndpoint = "https://m1.dcos/service/marathon";
 
 	/**
 	 * Secrets for a access a private registry to pull images.
