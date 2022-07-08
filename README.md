@@ -1,3 +1,5 @@
+# spring-cloud-deployer-mesos is no longer actively maintained by VMware, Inc.
+
 # spring-cloud-mesos-deployer
 
 
